@@ -105,7 +105,6 @@
     </Compile>
     <Compile Include="MapLayer.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Projection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

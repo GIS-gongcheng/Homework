@@ -250,6 +250,20 @@ namespace GISProject_rjy
                 }
             }
         }
+
+        public void MoveUpLayer(int Layerid)
+        {
+            MapLayer curlayer = _MapLayers[Layerid];
+            _MapLayers.RemoveAt(Layerid);
+            _MapLayers.Insert(Layerid - 1, curlayer);
+            Refresh();
+        }
+
+        public void DeleteLayer(int Layerid)
+        {
+            _MapLayers.RemoveAt(Layerid);
+            Refresh();
+        }
         #endregion
 
         #region 母版事件处理

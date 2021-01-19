@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.文件ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.打开ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -37,10 +38,15 @@
             this.投影变换ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.统计分析ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.制图ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeView1 = new System.Windows.Forms.TreeView();
-            this.mapControl1 = new GISProject_rjy.MapControl();
-            this.读取图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tVLayers = new System.Windows.Forms.TreeView();
+            this.openSldFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.layerMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.上移图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.加载图层样式SLDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.删除图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mapControl = new GISProject_rjy.MapControl();
             this.menuStrip1.SuspendLayout();
+            this.layerMenuStrip.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -110,51 +116,79 @@
             // 
             // 制图ToolStripMenuItem
             // 
-            this.制图ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.读取图层ToolStripMenuItem});
             this.制图ToolStripMenuItem.Name = "制图ToolStripMenuItem";
             this.制图ToolStripMenuItem.Size = new System.Drawing.Size(43, 22);
             this.制图ToolStripMenuItem.Text = "制图";
             // 
-            // treeView1
+            // tVLayers
             // 
-            this.treeView1.Location = new System.Drawing.Point(6, 26);
-            this.treeView1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(128, 364);
-            this.treeView1.TabIndex = 1;
+            this.tVLayers.Location = new System.Drawing.Point(6, 26);
+            this.tVLayers.Margin = new System.Windows.Forms.Padding(2);
+            this.tVLayers.Name = "tVLayers";
+            this.tVLayers.Size = new System.Drawing.Size(128, 364);
+            this.tVLayers.TabIndex = 1;
+            this.tVLayers.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tVLayers_NodeMouseClick);
             // 
-            // mapControl1
+            // openSldFileDialog
             // 
-            this.mapControl1.BackColor = System.Drawing.SystemColors.Window;
-            this.mapControl1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.mapControl1.Location = new System.Drawing.Point(136, 26);
-            this.mapControl1.MapLayers = new GISProject_rjy.MapLayer[0];
-            this.mapControl1.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
-            this.mapControl1.Name = "mapControl1";
-            this.mapControl1.Size = new System.Drawing.Size(428, 364);
-            this.mapControl1.TabIndex = 2;
+            this.openSldFileDialog.FileName = "openSldFileDialog";
             // 
-            // 读取图层ToolStripMenuItem
+            // layerMenuStrip
             // 
-            this.读取图层ToolStripMenuItem.Name = "读取图层ToolStripMenuItem";
-            this.读取图层ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.读取图层ToolStripMenuItem.Text = "读取图层";
+            this.layerMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.上移图层ToolStripMenuItem,
+            this.加载图层样式SLDToolStripMenuItem,
+            this.删除图层ToolStripMenuItem});
+            this.layerMenuStrip.Name = "layerMenuStrip";
+            this.layerMenuStrip.Size = new System.Drawing.Size(189, 70);
+            // 
+            // 上移图层ToolStripMenuItem
+            // 
+            this.上移图层ToolStripMenuItem.Name = "上移图层ToolStripMenuItem";
+            this.上移图层ToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.上移图层ToolStripMenuItem.Text = "上移图层";
+            this.上移图层ToolStripMenuItem.Click += new System.EventHandler(this.上移图层ToolStripMenuItem_Click);
+            // 
+            // 加载图层样式SLDToolStripMenuItem
+            // 
+            this.加载图层样式SLDToolStripMenuItem.Name = "加载图层样式SLDToolStripMenuItem";
+            this.加载图层样式SLDToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.加载图层样式SLDToolStripMenuItem.Text = "加载图层样式（SLD）";
+            this.加载图层样式SLDToolStripMenuItem.Click += new System.EventHandler(this.加载图层样式SLDToolStripMenuItem_Click);
+            // 
+            // 删除图层ToolStripMenuItem
+            // 
+            this.删除图层ToolStripMenuItem.Name = "删除图层ToolStripMenuItem";
+            this.删除图层ToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.删除图层ToolStripMenuItem.Text = "删除图层";
+            this.删除图层ToolStripMenuItem.Click += new System.EventHandler(this.删除图层ToolStripMenuItem_Click);
+            // 
+            // mapControl
+            // 
+            this.mapControl.BackColor = System.Drawing.SystemColors.Window;
+            this.mapControl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.mapControl.Location = new System.Drawing.Point(136, 26);
+            this.mapControl.MapLayers = new GISProject_rjy.MapLayer[0];
+            this.mapControl.Margin = new System.Windows.Forms.Padding(1);
+            this.mapControl.Name = "mapControl";
+            this.mapControl.Size = new System.Drawing.Size(428, 364);
+            this.mapControl.TabIndex = 2;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(566, 394);
-            this.Controls.Add(this.mapControl1);
-            this.Controls.Add(this.treeView1);
+            this.Controls.Add(this.mapControl);
+            this.Controls.Add(this.tVLayers);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.layerMenuStrip.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -171,9 +205,13 @@
         private System.Windows.Forms.ToolStripMenuItem 投影变换ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 统计分析ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 制图ToolStripMenuItem;
-        private System.Windows.Forms.TreeView treeView1;
-        private MapControl mapControl1;
-        private System.Windows.Forms.ToolStripMenuItem 读取图层ToolStripMenuItem;
+        private System.Windows.Forms.TreeView tVLayers;
+        private MapControl mapControl;
+        private System.Windows.Forms.OpenFileDialog openSldFileDialog;
+        private System.Windows.Forms.ContextMenuStrip layerMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem 上移图层ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 加载图层样式SLDToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 删除图层ToolStripMenuItem;
     }
 }
 
