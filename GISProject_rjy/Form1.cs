@@ -20,11 +20,41 @@ namespace GISProject_rjy
 
         public Form1()
         {
+            GdalConfiguration.ConfigureGdal();
+            GdalConfiguration.ConfigureOgr();
+            Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
+            Gdal.AllRegister();
+            Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
+            Ogr.RegisterAll();
             InitializeComponent();
         }
 
         private void 打开shp文件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "打开矢量文件";
+            ofd.Filter = @"Shapefile(*.shp)|*.shp";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string path = ofd.FileName; //文件路径
+                string name = ofd.SafeFileName; //文件名
+                MapLayer mapLayer = new MapLayer(name, "Shp", path);
+                //获取外接矩形
+                DataSource ds = Ogr.Open(path, 0);
+                Layer layer = ds.GetLayerByIndex(0);
+                Envelope ext = new Envelope();
+                layer.GetExtent(ext, 1);
+                mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
+                //添加新图层至地图
+                if (tVLayers.Nodes.Count == 0)
+                    tVLayers.Nodes.Add("图层");
+                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.ExpandAll();
+                mapControl._MapLayers.Add(mapLayer);
+                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+            }
+
+            /****
             string shpfilePath = "";
             openShapefileDialog.Filter = "shapefiles(*.shp)|*.shp|All files(*.*)|*.*"; //打开文件路径
             if (openShapefileDialog.ShowDialog() == DialogResult.OK)
@@ -42,12 +72,36 @@ namespace GISProject_rjy
                 tVLayers.SelectedNode = tnNew; //聚焦于该新的图层
 
                 mapControl.AddLayer(sFileName, sFileType, shpfilePath);
-            }
+            }****/
         }
 
         private void 打开Tiff文件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "打开栅格文件";
+            ofd.Filter = @"Tiff(*.tif)|*.tif";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string path = ofd.FileName; //文件路径
+                string name = ofd.SafeFileName; //文件名
+                MapLayer mapLayer = new MapLayer(name, "Tiff", path);
+                //获取外接矩形
+                Dataset ds = Gdal.Open(path, Access.GA_ReadOnly);
+                double[] adfGeoTransform = new double[6];
+                float minX, minY, maxX, maxY;
+                ds.GetGeoTransform(adfGeoTransform);
+                minX = (float)(adfGeoTransform[0] + adfGeoTransform[2] * ds.RasterYSize);
+                minY = (float)(adfGeoTransform[3] + adfGeoTransform[5] * ds.RasterYSize);
+                maxX = (float)(adfGeoTransform[0] + adfGeoTransform[1] * ds.RasterXSize);
+                maxY = (float)(adfGeoTransform[3] + adfGeoTransform[4] * ds.RasterXSize);
+                mapLayer.SetExtent(minX, minY, maxX, maxY);
+                if (tVLayers.Nodes.Count == 0)
+                    tVLayers.Nodes.Add("图层");
+                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.ExpandAll();
+                mapControl._MapLayers.Add(mapLayer);
+                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+            }
         }
 
         private void 读取图层ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -128,6 +182,31 @@ namespace GISProject_rjy
                 return "Tiff";
         }
 
+        private void tVLayers_MouseUp(object sender, MouseEventArgs e)
+        {
+            //鼠标抬起产生菜单
+            if (e.Button == MouseButtons.Right)
+            {
+                Point ClickPoint = new Point(e.X, e.Y);
+                TreeNode CurrentNode = tVLayers.GetNodeAt(ClickPoint);
+                if (CurrentNode == null || CurrentNode.Parent == null)
+                    return;
+                tVLayers.SelectedNode = CurrentNode;
+                layerMenuStrip.Show(tVLayers, ClickPoint);
+            }
+        }
 
+        private void 缩放至图层ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string name = tVLayers.SelectedNode.Text;
+            for (int i = 0; i < mapControl._MapLayers.Count(); i++)
+            {
+                if (mapControl._MapLayers[i].Name == name)
+                {
+                    mapControl.Extent(mapControl._MapLayers[i]);
+                    break;
+                }
+            }
+        }
     }
 }

@@ -112,6 +112,41 @@ namespace GISProject_rjy
                 DisplayScaleChanged(this);
         }
 
+        /// <summary>
+        /// 缩放至图层
+        /// </summary>
+        /// <param name="layer">选中图层</param>
+        /// <returns></returns>
+        public void Extent(MapLayer layer)
+        {
+            float[] MBR = new float[4];
+            layer.GetExtent(MBR);
+            float minX = MBR[0];
+            float minY = MBR[1];
+            float maxX = MBR[2];
+            float maxY = MBR[3];
+            mOffsetX = MBR[0];
+            mOffsetY = MBR[3];
+            if (maxX - minX == 0 && maxY - minY == 0)
+                return;
+            else if (maxY - minY == 0)
+            {
+                _DisplayScale = (maxX - minX) / 780;
+                mOffsetY = minY - _DisplayScale * 445;
+            }
+            else if ((maxX - minX) / (maxY - minY) > 1.7528)
+            {
+                _DisplayScale = (maxX - minX) / 780;
+            }
+            else
+                _DisplayScale = (maxY - minY) / 445;
+            Refresh();
+            //触发事件
+            if (DisplayScaleChanged != null)
+                DisplayScaleChanged(this);
+        }
+
+
         public void InputShapefile(BinaryReader br, string fileName, string shpfilePath)
         {
             string dbfFilePath = shpfilePath.Remove(shpfilePath.Length - fileName.Length - 4) + fileName + ".dbf";
@@ -128,9 +163,6 @@ namespace GISProject_rjy
         {
             MapLayer newLayer = new MapLayer(name, type, filePath);
             _MapLayers.Add(newLayer);
-            Graphics g = Graphics.FromImage(mFeatures);
-            if (type == "Point")
-                DrawPointLayer(g, newLayer);
         }
 
         public void MoveUpLayer(int Layerid)
@@ -178,40 +210,69 @@ namespace GISProject_rjy
                 return new DataTable();
         }
 
-        //绘制点图层
-        private void DrawPointLayer(Graphics g, MapLayer curLayer)
+
+        //绘制Point要素
+        private void DrawPoint(Graphics g, Geometry geom)
         {
-            Ogr.RegisterAll();
-            DataSource ds = Ogr.Open(curLayer.FilePath, 0);
-            //遍历每个图层
-            for (int i = 0; i < ds.GetLayerCount(); i++)
+            if (geom != null)
             {
-                Layer layer = ds.GetLayerByIndex(i);
-                Feature feature;
-                //遍历图层中每个要素
-                while ((feature = layer.GetNextFeature()) != null)
+                //提取坐标信息
+                string GeomWkt;
+                geom.ExportToWkt(out GeomWkt);
+                string[] str = GeomWkt.Split(new char[3] { ' ', '(', ')' });
+                PointF point = new PointF();
+                //MessageBox.Show(str[0].Substring(6)+"@@@"+ str[1].Substring(0, str[1].Length - 1));
+                point.X = Convert.ToSingle(str[2]);
+                point.Y = Convert.ToSingle(str[3]);
+                //计算屏幕坐标
+                PointF ScreenPoint = FromMapPoint(point);
+                //绘制
+                g.FillEllipse(new SolidBrush(Color.Blue), new RectangleF((float)(ScreenPoint.X - 2), (float)(ScreenPoint.Y - 2), 4, 4));
+            }
+        }
+
+        //绘制Polygon要素
+        private void DrawPolygon(Graphics g, Geometry geom)
+        {
+            if (geom != null)
+            {
+                //提取坐标信息
+                string GeomWkt;
+                geom.ExportToWkt(out GeomWkt);
+                string[] str = GeomWkt.Split(new char[4] { ' ', '(', ')', ',' });
+                List<PointF> ScreenPoints = new List<PointF>();
+                for (int k = 3; k < str.Count() - 3; k += 2)
                 {
-                    Geometry geom = feature.GetGeometryRef();
-                    if (geom != null)
+                    PointF point = new PointF();
+                    point.X = Convert.ToSingle(str[k]);
+                    point.Y = Convert.ToSingle(str[k + 1]);
+                    ScreenPoints.Add(FromMapPoint(point));
+                }
+                //绘制
+                g.FillPolygon(new SolidBrush(Color.Orange), ScreenPoints.ToArray());
+                g.DrawPolygon(new Pen(Color.Black), ScreenPoints.ToArray());
+            }
+        }
+
+        //绘制MultiPolygon要素
+        private void DrawMultiPolygon(Graphics g, Geometry geom)
+        {
+            if (geom != null)
+            {
+                Geometry sub_geom;
+                for (int j = 0; j < geom.GetGeometryCount(); j++)
+                {
+                    sub_geom = geom.GetGeometryRef(j);
+                    if (sub_geom != null)
                     {
-                        //提取坐标信息
-                        string GeomWkt;
-                        geom.ExportToWkt(out GeomWkt);
-                        string[] str = GeomWkt.Split(' ');
-                        PointF point = new PointF();
-                        point.X = Convert.ToSingle(str[0].Substring(6));
-                        point.Y = Convert.ToSingle(str[1].Substring(0, str[1].Length-1));
-                        //计算屏幕坐标
-                        PointF ScreenPoint = FromMapPoint(point);
-                        //绘制
-                        g.FillEllipse(new SolidBrush(Color.Blue), new RectangleF((float)(ScreenPoint.X - 2 ), (float)(ScreenPoint.Y - 2), 4, 4));
+                        DrawPolygon(g, sub_geom);
                     }
                 }
             }
         }
 
-        //绘制Polygon图层
-        private void DrawPolygonLayer(Graphics g, MapLayer curLayer)
+        //绘制矢量图层
+        private void DrawShpLayer(Graphics g, MapLayer curLayer)
         {
             Ogr.RegisterAll();
             DataSource ds = Ogr.Open(curLayer.FilePath, 0);
@@ -226,87 +287,68 @@ namespace GISProject_rjy
                     Geometry geom = feature.GetGeometryRef();
                     if (geom != null)
                     {
-                        //提取坐标信息
-                        string GeomWkt;
-                        geom.ExportToWkt(out GeomWkt);
-                        string[] str1 = GeomWkt.Split(',');
-                        List<PointF> ScreenPoints = new List<PointF>();
-                        string[] str2 = str1[0].Split(' ');
-                        PointF point = new PointF();
-                        point.X = Convert.ToSingle(str2[0].Substring(9));
-                        point.Y = Convert.ToSingle(str2[1]);
-                        ScreenPoints.Add(FromMapPoint(point));
-                        for(int k=1;k<str1.Count()-1;k++)
-                        {
-                            str2 = str1[k].Split(' ');
-                            point.X = Convert.ToSingle(str2[0]);
-                            point.Y = Convert.ToSingle(str2[1]);
-                            ScreenPoints.Add(FromMapPoint(point));
-                        }
-                        str2 = str1[str1.Count() - 1].Split(' ');
-                        point.X = Convert.ToSingle(str2[0]);
-                        point.Y = Convert.ToSingle(str2[1].Substring(0, str2[1].Length-2));
-                        ScreenPoints.Add(FromMapPoint(point));
-                        //绘制
-                        g.FillPolygon(new SolidBrush(Color.Cyan), ScreenPoints.ToArray());                   
+                        string type = geom.GetGeometryName();
+                        if (type == "POLYGON")
+                            DrawPolygon(g, geom);
+                        else if (type == "MULTIPOLYGON")
+                            DrawMultiPolygon(g, geom);
+                        else if (type == "POINT")
+                            DrawPoint(g, geom);
                     }
                 }
             }
         }
 
-        //绘制MultiPolygon图层
-        private void DrawMultiPolygonLayer(Graphics g, MapLayer curLayer)
+
+
+        //绘制tiff图层
+        private void DrawTiffLayer(Graphics g, MapLayer curLayer)
         {
-            Ogr.RegisterAll();
-            DataSource ds = Ogr.Open(curLayer.FilePath, 0);
-            //遍历每个图层
-            for (int i = 0; i < ds.GetLayerCount(); i++)
+            //PictureBox pictureBox = new PictureBox();
+            float[] MBR = new float[4];
+            curLayer.GetExtent(MBR);
+            int width, height;
+            //根据比例尺确定图片大小和位置
+            PointF locationPoint = FromMapPoint(new PointF(MBR[0], MBR[3]));
+            if (locationPoint.Y < this.Height && locationPoint.X < this.Width)
             {
-                Layer layer = ds.GetLayerByIndex(i);
-                Feature feature;
-                //遍历图层中每个要素
-                while ((feature = layer.GetNextFeature()) != null)
+                width = (int)((MBR[2] - MBR[0]) / _DisplayScale);
+                height = (int)((MBR[3] - MBR[1]) / _DisplayScale);
+                Dataset ds = Gdal.Open(curLayer.FilePath, Access.GA_ReadOnly);
+                int imgWidth = ds.RasterXSize;   //影像宽 
+                int imgHeight = ds.RasterYSize;  //影像高
+                                                 //构建位图 
+                int[] r = new int[width * height];//(改为list)
+                Band band = ds.GetRasterBand(1);
+                band.ReadRaster(0, 0, imgWidth, imgHeight, r, width, height, 0, 0);
+                double[] MinMax = { 0, 0 };
+                band.ComputeRasterMinMax(MinMax, 0);
+                int i, j;
+                for (i = 0; i < width; i++)
                 {
-                    Geometry geom = feature.GetGeometryRef();
-                    if (geom != null)
+                    for (j = 0; j < height; j++)
                     {
-                        Geometry sub_geom;
-                        for (int j = 0; j < geom.GetGeometryCount(); j++)
+                        int value = Convert.ToInt32(r[i + j * width]);    //像元值
+                                                                          //拉伸
+                        if (MinMax[0] == -32768)
                         {
-                            sub_geom = geom.GetGeometryRef(j);
-                            if (sub_geom != null)
+                            if (value == MinMax[0])
                             {
-                                //提取坐标信息
-                                string GeomWkt;
-                                sub_geom.ExportToWkt(out GeomWkt);
-                                string[] str1 = GeomWkt.Split(',');
-                                List<PointF> ScreenPoints = new List<PointF>();
-                                string[] str2 = str1[0].Split(' ');
-                                PointF point = new PointF();
-                                point.X = Convert.ToSingle(str2[0].Substring(9));
-                                point.Y = Convert.ToSingle(str2[1]);
-                                ScreenPoints.Add(FromMapPoint(point));
-                                for (int k = 1; k < str1.Count() - 1; k++)
-                                {
-                                    str2 = str1[k].Split(' ');
-                                    point.X = Convert.ToSingle(str2[0]);
-                                    point.Y = Convert.ToSingle(str2[1]);
-                                    ScreenPoints.Add(FromMapPoint(point));
-                                }
-                                str2 = str1[str1.Count() - 1].Split(' ');
-                                point.X = Convert.ToSingle(str2[0]);
-                                point.Y = Convert.ToSingle(str2[1].Substring(0, str2[1].Length - 2));
-                                ScreenPoints.Add(FromMapPoint(point));
-                                //绘制
-                                g.FillPolygon(new SolidBrush(Color.Cyan), ScreenPoints.ToArray());
+                                value = 0;
+                            }
+                            else
+                            {
+                                value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
                             }
                         }
+                        else
+                            value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                        Color newColor = Color.FromArgb(value, value, value);
+                        g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
                     }
                 }
             }
         }
-
-
         #endregion
 
         #region 母版事件处理
@@ -336,26 +378,41 @@ namespace GISProject_rjy
             //SelectFeature();
         }
 
-        //母版重绘
-        private void MapControl_Paint(object sender, PaintEventArgs e)
+        private void MapControl_MouseDown(object sender, MouseEventArgs e)
         {
-            for(int i=0;i<_MapLayers.Count;i++)
+            if (e.Button == MouseButtons.Left)
             {
-                if(_MapLayers[i].Type == "POINT")
+                mMouseLocation.X = e.Location.X;
+                mMouseLocation.Y = e.Location.Y;
+            }
+        }
+
+        private void MapControl_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)
+            {
+                PointF sPreMouseLocation = new PointF(mMouseLocation.X, mMouseLocation.Y);
+                PointF sPrePoint = ToMapPoint(sPreMouseLocation);
+                PointF sCurMouseLocation = new PointF(e.Location.X, e.Location.Y);
+                PointF sCurPoint = ToMapPoint(sCurMouseLocation);
+                mOffsetX = mOffsetX + sPrePoint.X - sCurPoint.X;
+                mOffsetY = mOffsetY + sPrePoint.Y - sCurPoint.Y;
+                Refresh();
+                mMouseLocation.X = e.Location.X;
+                mMouseLocation.Y = e.Location.Y;
+            }
+        }
+
+        //母版重绘
+        private void MapControl_Paint_1(object sender, PaintEventArgs e)
+        {
+            for (int i = 0; i < _MapLayers.Count(); i++)
+            {
+                if (_MapLayers[i].Type == "Shp")
+                    DrawShpLayer(e.Graphics, _MapLayers[i]);
+                else if (_MapLayers[i].Type == "Tiff")
                 {
-                    DrawPointLayer(e.Graphics, _MapLayers[i]);
-                }
-                else if (_MapLayers[i].Type == "POLYGON")
-                {
-                    DrawPolygonLayer(e.Graphics, _MapLayers[i]);
-                }
-                else if (_MapLayers[i].Type == "MULTIPOLYGON")
-                {
-                    DrawMultiPolygonLayer(e.Graphics, _MapLayers[i]);
-                }
-                else if (_MapLayers[i].Type == "TIFF")
-                {
-                    
+                    DrawTiffLayer(e.Graphics, _MapLayers[i]);
                 }
             }
         }
