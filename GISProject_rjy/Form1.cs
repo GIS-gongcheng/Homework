@@ -28,7 +28,13 @@ namespace GISProject_rjy
             Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
             Ogr.RegisterAll();
             InitializeComponent();
+            
         }
+
+        //用来指示是否把shp文件导入了数据库
+        bool ImportProvince = false;
+        bool ImportCounty = false;
+        bool ImportCyclone = false;
 
         private void 打开shp文件ToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -222,21 +228,25 @@ namespace GISProject_rjy
                 string path = ofd.FileName; //文件路径
                 string name = ofd.SafeFileName; //文件名
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
-                    "shp2pgsql -d -g \"shape\" -s 4326 -W ";
+                    "shp2pgsql -d -g \"geom\" -s 4326 -W ";
                 if(name == "Province_Hainan.shp")
                 {
                     bat += "GBK \"" + path+ "\" Province_Hainan > D:\\province.sql\r\n" +
                         "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\province.sql";
+                    ImportProvince = true;
+                    
                 }
                 else if(name == "County_Hainan.shp")
                 {
                     bat += "UTF-8 \"" + path + "\" County_Hainan > D:\\county.sql\r\n" +
                         "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\county.sql";
+                    ImportCounty = true;
                 }
                 else if(name == "cyclone.shp")
                 {
                     bat += "UTF-8 \"" + path + "\" cyclone > D:\\cyclone.sql\r\n" +
                         "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\cyclone.sql";
+                    ImportCyclone = true;
                 }
                 else
                 {
@@ -245,6 +255,108 @@ namespace GISProject_rjy
                 File.WriteAllText("test.bat", bat);
                 Process.Start("test.bat");
                 MessageBox.Show("Shapefile文件已经成功导入数据库！");
+            }
+        }
+
+        
+
+        private void 导出ProvinceHainanToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(ImportProvince == true)
+            {
+                string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
+                    "pgsql2shp -f D:\\data\\test\\province_hainan.shp -u postgres mypostdb province_hainan";
+                File.WriteAllText("test.bat", bat);
+                Process.Start("test.bat");
+                string path = "D:\\data\\test\\province_hainan.shp";//文件路径
+                string name = "province_hainan.shp";//文件名
+                FileStream F = new FileStream(path,FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                MapLayer mapLayer = new MapLayer(name, "Shp", path);
+                //获取外接矩形
+                DataSource ds = Ogr.Open(path, 0);
+                Layer layer = ds.GetLayerByIndex(0);
+                Envelope ext = new Envelope();
+                layer.GetExtent(ext, 1);
+                mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
+                //添加新图层至地图
+                if (tVLayers.Nodes.Count == 0)
+                    tVLayers.Nodes.Add("图层");
+                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.ExpandAll();
+                mapControl._MapLayers.Add(mapLayer);
+                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+                F.Close();
+            }
+            else
+            {
+                MessageBox.Show("请先将矢量数据导入数据库！");
+            }
+            
+        }
+
+        private void 导出CountyHainanToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ImportProvince == true)
+            {
+                string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
+                    "pgsql2shp -f D:\\data\\test\\county_hainan.shp -u postgres mypostdb county_hainan";
+                File.WriteAllText("test.bat", bat);
+                Process.Start("test.bat");
+                string path = "D:\\data\\test\\county_hainan.shp";//文件路径
+                string name = "county_hainan.shp";//文件名
+                FileStream F = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                MapLayer mapLayer = new MapLayer(name, "Shp", path);
+                //获取外接矩形
+                DataSource ds = Ogr.Open(path, 0);
+                Layer layer = ds.GetLayerByIndex(0);
+                Envelope ext = new Envelope();
+                layer.GetExtent(ext, 1);
+                mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
+                //添加新图层至地图
+                if (tVLayers.Nodes.Count == 0)
+                    tVLayers.Nodes.Add("图层");
+                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.ExpandAll();
+                mapControl._MapLayers.Add(mapLayer);
+                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+                F.Close();
+            }
+            else
+            {
+                MessageBox.Show("请先将矢量数据导入数据库！");
+            }
+        }
+
+        private void 导出CycloneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ImportProvince == true)
+            {
+                string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
+                    "pgsql2shp -f D:\\data\\test\\cyclone.shp -u postgres mypostdb cyclone";
+                File.WriteAllText("test.bat", bat);
+                Process.Start("test.bat");
+                string path = "D:\\data\\test\\cyclone.shp";//文件路径
+                string name = "cyclone.shp";//文件名
+                FileStream F = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+                MapLayer mapLayer = new MapLayer(name, "Shp", path);
+                //获取外接矩形
+                DataSource ds = Ogr.Open(path, 0);
+                Layer layer = ds.GetLayerByIndex(0);
+                Envelope ext = new Envelope();
+                layer.GetExtent(ext, 1);
+                mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
+                //添加新图层至地图
+                if (tVLayers.Nodes.Count == 0)
+                    tVLayers.Nodes.Add("图层");
+                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.ExpandAll();
+                mapControl._MapLayers.Add(mapLayer);
+                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+                F.Close();
+            }
+            else
+            {
+                MessageBox.Show("请先将矢量数据导入数据库！");
             }
         }
     }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Npgsql;
+using System.Data.OleDb;
 
 namespace GISProject_rjy
 {
@@ -20,7 +21,7 @@ namespace GISProject_rjy
         public DBConnector()
         {
             //默认连接本机数据库mypostdb
-            connectionStringStr = "User ID=postgres;Password=123456;Server=127.0.0.1;Port=5432;Database=mypostdb;";
+            connectionStringStr = "UserID=postgres;Password=123456;Server=127.0.0.1;Port=5432;Database=mypostdb;";
         }
 
         /// <summary>
@@ -47,6 +48,55 @@ namespace GISProject_rjy
                 return null;
             }
             return DS;
+        }
+
+        public DataTable GetShpSet()
+        {
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            NpgsqlDataAdapter adp = null;
+            DataSet ds = new DataSet();
+            DataTable dt = new DataTable();
+            NpgsqlDataReader dr = null;
+            string s1, s2, s3;
+
+            sqlStr = "select tablename from pg_tables where schemaname='public';";
+            //sqlStr = "select * from cyclone;";
+            try
+            {
+                cnn = new NpgsqlConnection(connectionStringStr);
+                cnn.Open();
+
+                cmd = new NpgsqlCommand(sqlStr, cnn);
+                dr = cmd.ExecuteReader();
+                adp = new NpgsqlDataAdapter(sqlStr,cnn);
+                //DataSet ds = new DataSet();
+                adp.Fill(ds);
+                dr.Read();
+                int i = 0;
+                while(dr.Read())
+                {
+                    if(i == 0)
+                    {
+                        s1 = dr.GetString(0).ToString();
+                    }
+                    else if(i == 1)
+                    {
+                        s2 = dr.GetString(0).ToString();
+                    }
+                    else if(i == 2)
+                    {
+                        s3 = dr.GetString(0).ToString();
+                    }
+                    i++;
+                }
+
+            }
+            catch (Exception error)
+            {
+                System.Console.WriteLine(error.Message);
+            }
+            return dt;
         }
 
         /// <summary>

@@ -47,6 +47,10 @@
             this.缩放至图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openShapefileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mapControl = new GISProject_rjy.MapControl();
+            this.导出数据库shp文件ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.导出ProvinceHainanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.导出CountyHainanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.导出CycloneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.layerMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -70,7 +74,8 @@
             // 
             this.文件ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.打开ToolStripMenuItem,
-            this.导入数据库ToolStripMenuItem});
+            this.导入数据库ToolStripMenuItem,
+            this.导出数据库shp文件ToolStripMenuItem});
             this.文件ToolStripMenuItem.Name = "文件ToolStripMenuItem";
             this.文件ToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
             this.文件ToolStripMenuItem.Text = "文件";
@@ -81,27 +86,27 @@
             this.打开shp文件ToolStripMenuItem,
             this.打开Tiff文件ToolStripMenuItem});
             this.打开ToolStripMenuItem.Name = "打开ToolStripMenuItem";
-            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.打开ToolStripMenuItem.Text = "打开";
             // 
             // 打开shp文件ToolStripMenuItem
             // 
             this.打开shp文件ToolStripMenuItem.Name = "打开shp文件ToolStripMenuItem";
-            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.打开shp文件ToolStripMenuItem.Text = "打开Shapefile文件";
             this.打开shp文件ToolStripMenuItem.Click += new System.EventHandler(this.打开shp文件ToolStripMenuItem_Click);
             // 
             // 打开Tiff文件ToolStripMenuItem
             // 
             this.打开Tiff文件ToolStripMenuItem.Name = "打开Tiff文件ToolStripMenuItem";
-            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.打开Tiff文件ToolStripMenuItem.Text = "打开Tiff文件";
             this.打开Tiff文件ToolStripMenuItem.Click += new System.EventHandler(this.打开Tiff文件ToolStripMenuItem_Click);
             // 
             // 导入数据库ToolStripMenuItem
             // 
             this.导入数据库ToolStripMenuItem.Name = "导入数据库ToolStripMenuItem";
-            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.导入数据库ToolStripMenuItem.Text = "导入数据库";
             this.导入数据库ToolStripMenuItem.Click += new System.EventHandler(this.导入数据库ToolStripMenuItem_Click);
             // 
@@ -187,10 +192,41 @@
             this.mapControl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.mapControl.Location = new System.Drawing.Point(136, 26);
             this.mapControl.MapLayers = new GISProject_rjy.MapLayer[0];
-            this.mapControl.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
+            this.mapControl.Margin = new System.Windows.Forms.Padding(1);
             this.mapControl.Name = "mapControl";
             this.mapControl.Size = new System.Drawing.Size(428, 364);
             this.mapControl.TabIndex = 2;
+            // 
+            // 导出数据库shp文件ToolStripMenuItem
+            // 
+            this.导出数据库shp文件ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.导出ProvinceHainanToolStripMenuItem,
+            this.导出CountyHainanToolStripMenuItem,
+            this.导出CycloneToolStripMenuItem});
+            this.导出数据库shp文件ToolStripMenuItem.Name = "导出数据库shp文件ToolStripMenuItem";
+            this.导出数据库shp文件ToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.导出数据库shp文件ToolStripMenuItem.Text = "导出数据库shp文件";
+            // 
+            // 导出ProvinceHainanToolStripMenuItem
+            // 
+            this.导出ProvinceHainanToolStripMenuItem.Name = "导出ProvinceHainanToolStripMenuItem";
+            this.导出ProvinceHainanToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.导出ProvinceHainanToolStripMenuItem.Text = "导出Province_Hainan";
+            this.导出ProvinceHainanToolStripMenuItem.Click += new System.EventHandler(this.导出ProvinceHainanToolStripMenuItem_Click);
+            // 
+            // 导出CountyHainanToolStripMenuItem
+            // 
+            this.导出CountyHainanToolStripMenuItem.Name = "导出CountyHainanToolStripMenuItem";
+            this.导出CountyHainanToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.导出CountyHainanToolStripMenuItem.Text = "导出County_Hainan";
+            this.导出CountyHainanToolStripMenuItem.Click += new System.EventHandler(this.导出CountyHainanToolStripMenuItem_Click);
+            // 
+            // 导出CycloneToolStripMenuItem
+            // 
+            this.导出CycloneToolStripMenuItem.Name = "导出CycloneToolStripMenuItem";
+            this.导出CycloneToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.导出CycloneToolStripMenuItem.Text = "导出Cyclone";
+            this.导出CycloneToolStripMenuItem.Click += new System.EventHandler(this.导出CycloneToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -232,6 +268,10 @@
         private System.Windows.Forms.ToolStripMenuItem 删除图层ToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openShapefileDialog;
         private System.Windows.Forms.ToolStripMenuItem 缩放至图层ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 导出数据库shp文件ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 导出ProvinceHainanToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 导出CountyHainanToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 导出CycloneToolStripMenuItem;
     }
 }
 
