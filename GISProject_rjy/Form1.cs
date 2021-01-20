@@ -12,6 +12,7 @@ using System.Xml;
 using OSGeo.OGR;
 using OSGeo.OSR;
 using OSGeo.GDAL;
+using System.Diagnostics;
 
 namespace GISProject_rjy
 {
@@ -206,6 +207,43 @@ namespace GISProject_rjy
                     mapControl.Extent(mapControl._MapLayers[i]);
                     break;
                 }
+            }
+        }
+
+        private void 导入数据库ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "打开矢量文件";
+            ofd.Filter = @"Shapefile(*.shp)|*.shp";
+            //以生成.bat批处理文件的方式导入数据
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string path = ofd.FileName; //文件路径
+                string name = ofd.SafeFileName; //文件名
+                string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
+                    "shp2pgsql -d -g \"shape\" -s 4326 -W ";
+                if(name == "Province_Hainan.shp")
+                {
+                    bat += "GBK \"" + path+ "\" Province_Hainan > D:\\province.sql\r\n" +
+                        "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\province.sql";
+                }
+                else if(name == "County_Hainan.shp")
+                {
+                    bat += "UTF-8 \"" + path + "\" County_Hainan > D:\\county.sql\r\n" +
+                        "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\county.sql";
+                }
+                else if(name == "cyclone.shp")
+                {
+                    bat += "UTF-8 \"" + path + "\" cyclone > D:\\cyclone.sql\r\n" +
+                        "psql -h 127.0.0.1 -p 5432 -U postgres -w -d mypostdb -f D:\\cyclone.sql";
+                }
+                else
+                {
+                    MessageBox.Show("本系统暂不支持其他shapefile数据导入PostGIS数据库！");
+                }
+                File.WriteAllText("test.bat", bat);
+                Process.Start("test.bat");
+                MessageBox.Show("Shapefile文件已经成功导入数据库！");
             }
         }
     }

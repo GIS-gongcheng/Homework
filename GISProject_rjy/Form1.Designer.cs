@@ -44,8 +44,8 @@
             this.上移图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.加载图层样式SLDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.删除图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openShapefileDialog = new System.Windows.Forms.OpenFileDialog();
             this.缩放至图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openShapefileDialog = new System.Windows.Forms.OpenFileDialog();
             this.mapControl = new GISProject_rjy.MapControl();
             this.menuStrip1.SuspendLayout();
             this.layerMenuStrip.SuspendLayout();
@@ -53,7 +53,6 @@
             // 
             // menuStrip1
             // 
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.文件ToolStripMenuItem,
@@ -62,8 +61,8 @@
             this.制图ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1132, 48);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(3, 1, 0, 1);
+            this.menuStrip1.Size = new System.Drawing.Size(566, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -73,7 +72,7 @@
             this.打开ToolStripMenuItem,
             this.导入数据库ToolStripMenuItem});
             this.文件ToolStripMenuItem.Name = "文件ToolStripMenuItem";
-            this.文件ToolStripMenuItem.Size = new System.Drawing.Size(82, 44);
+            this.文件ToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
             this.文件ToolStripMenuItem.Text = "文件";
             // 
             // 打开ToolStripMenuItem
@@ -82,54 +81,55 @@
             this.打开shp文件ToolStripMenuItem,
             this.打开Tiff文件ToolStripMenuItem});
             this.打开ToolStripMenuItem.Name = "打开ToolStripMenuItem";
-            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(267, 44);
+            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.打开ToolStripMenuItem.Text = "打开";
             // 
             // 打开shp文件ToolStripMenuItem
             // 
             this.打开shp文件ToolStripMenuItem.Name = "打开shp文件ToolStripMenuItem";
-            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(348, 44);
+            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
             this.打开shp文件ToolStripMenuItem.Text = "打开Shapefile文件";
             this.打开shp文件ToolStripMenuItem.Click += new System.EventHandler(this.打开shp文件ToolStripMenuItem_Click);
             // 
             // 打开Tiff文件ToolStripMenuItem
             // 
             this.打开Tiff文件ToolStripMenuItem.Name = "打开Tiff文件ToolStripMenuItem";
-            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(348, 44);
+            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
             this.打开Tiff文件ToolStripMenuItem.Text = "打开Tiff文件";
             this.打开Tiff文件ToolStripMenuItem.Click += new System.EventHandler(this.打开Tiff文件ToolStripMenuItem_Click);
             // 
             // 导入数据库ToolStripMenuItem
             // 
             this.导入数据库ToolStripMenuItem.Name = "导入数据库ToolStripMenuItem";
-            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(267, 44);
+            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.导入数据库ToolStripMenuItem.Text = "导入数据库";
+            this.导入数据库ToolStripMenuItem.Click += new System.EventHandler(this.导入数据库ToolStripMenuItem_Click);
             // 
             // 投影变换ToolStripMenuItem
             // 
             this.投影变换ToolStripMenuItem.Name = "投影变换ToolStripMenuItem";
-            this.投影变换ToolStripMenuItem.Size = new System.Drawing.Size(130, 44);
+            this.投影变换ToolStripMenuItem.Size = new System.Drawing.Size(68, 22);
             this.投影变换ToolStripMenuItem.Text = "投影变换";
             this.投影变换ToolStripMenuItem.Click += new System.EventHandler(this.投影变换ToolStripMenuItem_Click);
             // 
             // 统计分析ToolStripMenuItem
             // 
             this.统计分析ToolStripMenuItem.Name = "统计分析ToolStripMenuItem";
-            this.统计分析ToolStripMenuItem.Size = new System.Drawing.Size(130, 44);
+            this.统计分析ToolStripMenuItem.Size = new System.Drawing.Size(68, 22);
             this.统计分析ToolStripMenuItem.Text = "统计分析";
             // 
             // 制图ToolStripMenuItem
             // 
             this.制图ToolStripMenuItem.Name = "制图ToolStripMenuItem";
-            this.制图ToolStripMenuItem.Size = new System.Drawing.Size(82, 44);
+            this.制图ToolStripMenuItem.Size = new System.Drawing.Size(44, 22);
             this.制图ToolStripMenuItem.Text = "制图";
             // 
             // tVLayers
             // 
-            this.tVLayers.Location = new System.Drawing.Point(12, 52);
-            this.tVLayers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tVLayers.Location = new System.Drawing.Point(6, 26);
+            this.tVLayers.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tVLayers.Name = "tVLayers";
-            this.tVLayers.Size = new System.Drawing.Size(252, 724);
+            this.tVLayers.Size = new System.Drawing.Size(128, 364);
             this.tVLayers.TabIndex = 1;
             this.tVLayers.NodeMouseClick += new System.Windows.Forms.TreeNodeMouseClickEventHandler(this.tVLayers_NodeMouseClick);
             this.tVLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.tVLayers_MouseUp);
@@ -147,61 +147,61 @@
             this.删除图层ToolStripMenuItem,
             this.缩放至图层ToolStripMenuItem});
             this.layerMenuStrip.Name = "layerMenuStrip";
-            this.layerMenuStrip.Size = new System.Drawing.Size(325, 200);
+            this.layerMenuStrip.Size = new System.Drawing.Size(195, 92);
             // 
             // 上移图层ToolStripMenuItem
             // 
             this.上移图层ToolStripMenuItem.Name = "上移图层ToolStripMenuItem";
-            this.上移图层ToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.上移图层ToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.上移图层ToolStripMenuItem.Text = "上移图层";
             this.上移图层ToolStripMenuItem.Click += new System.EventHandler(this.上移图层ToolStripMenuItem_Click);
             // 
             // 加载图层样式SLDToolStripMenuItem
             // 
             this.加载图层样式SLDToolStripMenuItem.Name = "加载图层样式SLDToolStripMenuItem";
-            this.加载图层样式SLDToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.加载图层样式SLDToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.加载图层样式SLDToolStripMenuItem.Text = "加载图层样式（SLD）";
             this.加载图层样式SLDToolStripMenuItem.Click += new System.EventHandler(this.加载图层样式SLDToolStripMenuItem_Click);
             // 
             // 删除图层ToolStripMenuItem
             // 
             this.删除图层ToolStripMenuItem.Name = "删除图层ToolStripMenuItem";
-            this.删除图层ToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
+            this.删除图层ToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
             this.删除图层ToolStripMenuItem.Text = "删除图层";
             this.删除图层ToolStripMenuItem.Click += new System.EventHandler(this.删除图层ToolStripMenuItem_Click);
+            // 
+            // 缩放至图层ToolStripMenuItem
+            // 
+            this.缩放至图层ToolStripMenuItem.Name = "缩放至图层ToolStripMenuItem";
+            this.缩放至图层ToolStripMenuItem.Size = new System.Drawing.Size(194, 22);
+            this.缩放至图层ToolStripMenuItem.Text = "缩放至图层";
+            this.缩放至图层ToolStripMenuItem.Click += new System.EventHandler(this.缩放至图层ToolStripMenuItem_Click);
             // 
             // openShapefileDialog
             // 
             this.openShapefileDialog.FileName = "openFileDialog1";
             // 
-            // 缩放至图层ToolStripMenuItem
-            // 
-            this.缩放至图层ToolStripMenuItem.Name = "缩放至图层ToolStripMenuItem";
-            this.缩放至图层ToolStripMenuItem.Size = new System.Drawing.Size(324, 38);
-            this.缩放至图层ToolStripMenuItem.Text = "缩放至图层";
-            this.缩放至图层ToolStripMenuItem.Click += new System.EventHandler(this.缩放至图层ToolStripMenuItem_Click);
-            // 
             // mapControl
             // 
             this.mapControl.BackColor = System.Drawing.SystemColors.Window;
             this.mapControl.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.mapControl.Location = new System.Drawing.Point(272, 52);
+            this.mapControl.Location = new System.Drawing.Point(136, 26);
             this.mapControl.MapLayers = new GISProject_rjy.MapLayer[0];
-            this.mapControl.Margin = new System.Windows.Forms.Padding(2);
+            this.mapControl.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
             this.mapControl.Name = "mapControl";
-            this.mapControl.Size = new System.Drawing.Size(852, 724);
+            this.mapControl.Size = new System.Drawing.Size(428, 364);
             this.mapControl.TabIndex = 2;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1132, 788);
+            this.ClientSize = new System.Drawing.Size(566, 374);
             this.Controls.Add(this.mapControl);
             this.Controls.Add(this.tVLayers);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.menuStrip1.ResumeLayout(false);
