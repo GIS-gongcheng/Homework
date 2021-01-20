@@ -212,6 +212,7 @@ namespace GISProject_rjy
 
         private void 导入数据库ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MessageBox.Show("矢量文件路径中请不要出现中文字符，否则可能出错！");
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Title = "打开矢量文件";
             ofd.Filter = @"Shapefile(*.shp)|*.shp";
