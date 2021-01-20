@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using OSGeo.OGR;
 using OSGeo.OSR;
 using OSGeo.GDAL;
+using System.IO;
 
 namespace GISProject_rjy
 {
@@ -31,6 +32,7 @@ namespace GISProject_rjy
         private float mOffsetX = 0F, mOffsetY = 0F; //窗口左上点地图坐标
         private PointF mMouseLocation = new PointF(); //鼠标当前位置
         private const float mcZoomRatio = 1.5F; //缩放系数
+        private Bitmap mFeatures;
         #endregion
 
         #region 属性
@@ -109,9 +111,52 @@ namespace GISProject_rjy
             if (DisplayScaleChanged != null)
                 DisplayScaleChanged(this);
         }
+
+        public void InputShapefile(BinaryReader br, string fileName, string shpfilePath)
+        {
+            string dbfFilePath = shpfilePath.Remove(shpfilePath.Length - fileName.Length - 4) + fileName + ".dbf";
+            _MapLayers[_MapLayers.Count - 1].DT = GetDbfData(dbfFilePath);
+            Refresh();
+        }
+
+        public void AddLayer(MapLayer layer)
+        {
+            _MapLayers.Add(layer);
+        }
+
+        public void AddLayer(string name, string type, string filePath)
+        {
+            MapLayer newLayer = new MapLayer(name, type, filePath);
+            _MapLayers.Add(newLayer);
+            Graphics g = Graphics.FromImage(mFeatures);
+            if (type == "Point")
+                DrawPointLayer(g, newLayer);
+        }
+
+        public void MoveUpLayer(int Layerid)
+        {
+            MapLayer curlayer = _MapLayers[Layerid];
+            _MapLayers.RemoveAt(Layerid);
+            _MapLayers.Insert(Layerid - 1, curlayer);
+            Refresh();
+        }
+
+        public void DeleteLayer(int Layerid)
+        {
+            _MapLayers.RemoveAt(Layerid);
+            Refresh();
+        }
+
         #endregion
 
         #region 事件
+
+        private void mapControl_Load(object sender, EventArgs e)
+        {
+            mFeatures = new Bitmap(this.Width, this.Height);    //初始化 勿删
+            //SelectFeature();
+        }
+
         public delegate void DisplayScaleChangedHandle(object sender);
 
         /// <summary>
@@ -123,6 +168,16 @@ namespace GISProject_rjy
         #endregion
 
         #region 私有函数
+
+        private DataTable GetDbfData(string tablePath)
+        {
+            dbfReader sDBFReader = new dbfReader();
+            if (sDBFReader.Open(tablePath))
+                return sDBFReader.GetDataTable();
+            else
+                return new DataTable();
+        }
+
         //绘制点图层
         private void DrawPointLayer(Graphics g, MapLayer curLayer)
         {
@@ -251,19 +306,7 @@ namespace GISProject_rjy
             }
         }
 
-        public void MoveUpLayer(int Layerid)
-        {
-            MapLayer curlayer = _MapLayers[Layerid];
-            _MapLayers.RemoveAt(Layerid);
-            _MapLayers.Insert(Layerid - 1, curlayer);
-            Refresh();
-        }
 
-        public void DeleteLayer(int Layerid)
-        {
-            _MapLayers.RemoveAt(Layerid);
-            Refresh();
-        }
         #endregion
 
         #region 母版事件处理
@@ -285,6 +328,12 @@ namespace GISProject_rjy
                 ZoomByCenter(sCenterPointOnMap, 1 / mcZoomRatio);
                 Refresh();
             }
+        }
+
+        private void MapControl_Load_1(object sender, EventArgs e)
+        {
+            mFeatures = new Bitmap(this.Width, this.Height);    //初始化 勿删
+            //SelectFeature();
         }
 
         //母版重绘

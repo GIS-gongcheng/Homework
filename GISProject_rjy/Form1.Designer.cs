@@ -45,6 +45,7 @@
             this.加载图层样式SLDToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.删除图层ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mapControl = new GISProject_rjy.MapControl();
+            this.openShapefileDialog = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.layerMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -79,27 +80,27 @@
             this.打开shp文件ToolStripMenuItem,
             this.打开Tiff文件ToolStripMenuItem});
             this.打开ToolStripMenuItem.Name = "打开ToolStripMenuItem";
-            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.打开ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.打开ToolStripMenuItem.Text = "打开";
             // 
             // 打开shp文件ToolStripMenuItem
             // 
             this.打开shp文件ToolStripMenuItem.Name = "打开shp文件ToolStripMenuItem";
-            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.打开shp文件ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.打开shp文件ToolStripMenuItem.Text = "打开Shapefile文件";
             this.打开shp文件ToolStripMenuItem.Click += new System.EventHandler(this.打开shp文件ToolStripMenuItem_Click);
             // 
             // 打开Tiff文件ToolStripMenuItem
             // 
             this.打开Tiff文件ToolStripMenuItem.Name = "打开Tiff文件ToolStripMenuItem";
-            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.打开Tiff文件ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.打开Tiff文件ToolStripMenuItem.Text = "打开Tiff文件";
             this.打开Tiff文件ToolStripMenuItem.Click += new System.EventHandler(this.打开Tiff文件ToolStripMenuItem_Click);
             // 
             // 导入数据库ToolStripMenuItem
             // 
             this.导入数据库ToolStripMenuItem.Name = "导入数据库ToolStripMenuItem";
-            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(134, 22);
+            this.导入数据库ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.导入数据库ToolStripMenuItem.Text = "导入数据库";
             // 
             // 投影变换ToolStripMenuItem
@@ -107,6 +108,7 @@
             this.投影变换ToolStripMenuItem.Name = "投影变换ToolStripMenuItem";
             this.投影变换ToolStripMenuItem.Size = new System.Drawing.Size(67, 22);
             this.投影变换ToolStripMenuItem.Text = "投影变换";
+            this.投影变换ToolStripMenuItem.Click += new System.EventHandler(this.投影变换ToolStripMenuItem_Click);
             // 
             // 统计分析ToolStripMenuItem
             // 
@@ -174,6 +176,10 @@
             this.mapControl.Size = new System.Drawing.Size(428, 364);
             this.mapControl.TabIndex = 2;
             // 
+            // openShapefileDialog
+            // 
+            this.openShapefileDialog.FileName = "openFileDialog1";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -212,6 +218,7 @@
         private System.Windows.Forms.ToolStripMenuItem 上移图层ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 加载图层样式SLDToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 删除图层ToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog openShapefileDialog;
     }
 }
 
