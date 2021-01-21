@@ -212,7 +212,7 @@ namespace GISProject_rjy
 
 
         //绘制Point要素
-        private void DrawPoint(Graphics g, Geometry geom)
+        private void DrawPoint(Graphics g, Geometry geom, int index, int fid)
         {
             if (geom != null)
             {
@@ -226,13 +226,83 @@ namespace GISProject_rjy
                 point.Y = Convert.ToSingle(str[3]);
                 //计算屏幕坐标
                 PointF ScreenPoint = FromMapPoint(point);
-                //绘制
-                g.FillEllipse(new SolidBrush(Color.Blue), new RectangleF((float)(ScreenPoint.X - 2), (float)(ScreenPoint.Y - 2), 4, 4));
+
+                if (MapLayers[index].Style.Styles.Count == 0)
+                {
+                    g.FillEllipse(new SolidBrush(Color.Blue), new RectangleF((float)(ScreenPoint.X - 2), (float)(ScreenPoint.Y - 2), 4, 4));
+                }
+
+                else
+                {
+                    SolidBrush brush;
+                    RectangleF rect;
+                    Pen pen;
+                    // 按照Style绘制
+                    // 遍历规则
+                    List<LayerStyle.FeatureTypeStyle.Rule> Rules = MapLayers[index].Style.Styles[0].Rules;
+                    for (int i = 0; i < Rules.Count; ++i)
+                    {
+                        if (Rules[i].FiltersAnd.Count != 0)
+                        {
+                            bool RuleEnabled = true;
+                            // 判断条件
+                            for (int j = 0; j < Rules[i].FiltersAnd.Count; ++j)
+                            {
+                                string filter = "FID = " + Convert.ToString(fid);
+                                double value = Convert.ToDouble(MapLayers[index].DT.Rows[fid][
+                                    Rules[i].FiltersAnd[j].PropertyName]);
+                                if (Rules[i].FiltersAnd[j].Criterion == "ge")
+                                {
+                                    if (value < Rules[i].FiltersAnd[j].Literal)
+                                    {
+                                        RuleEnabled = false;
+                                        break;
+                                    }
+                                }
+                                else if (Rules[i].FiltersAnd[j].Criterion == "le")
+                                {
+                                    if (value > Rules[i].FiltersAnd[j].Literal)
+                                    {
+                                        RuleEnabled = false;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (RuleEnabled)
+                            {
+                                // 画点
+                                if(Rules[i].PointSymbol.Fill.Enabled)
+                                {
+                                    brush = new SolidBrush(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PointSymbol.Fill.Opacity), 
+                                        Color.FromName(Rules[i].PointSymbol.Fill.Color)));
+                                    float size = Convert.ToSingle(MapLayers[index].DT.Rows[fid][
+                                        Rules[i].PointSymbol.SizePropertyName]);
+                                    rect = new RectangleF((float)(ScreenPoint.X - size * 0.5), (float)(ScreenPoint.Y - size * 0.5), size, size);
+                                    g.FillEllipse(brush, rect);
+                                    if (Rules[i].PointSymbol.Stroke.Enabled)
+                                    {
+                                        pen = new Pen(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PointSymbol.Stroke.Opacity),
+                                            Color.FromName(Rules[i].PointSymbol.Stroke.Color)), (float)Rules[i].PointSymbol.Stroke.Width);
+                                        g.DrawEllipse(pen, rect);
+                                    }
+                                }
+                            }
+                        }
+                        if (Rules[i].FiltersOr.Count != 0)
+                        {
+                            // 示例数据里没有
+                        }
+
+                    }
+                    //Brush brush = new Brush(Color.FromArgb(Convert.ToInt32(MapLayers[index].Style.Styles[0].Rules.)
+                    //g.FillEllipse(new SolidBrush())
+                }
+
             }
         }
 
         //绘制Polygon要素
-        private void DrawPolygon(Graphics g, Geometry geom)
+        private void DrawPolygon(Graphics g, Geometry geom, int index)
         {
             if (geom != null)
             {
@@ -255,7 +325,7 @@ namespace GISProject_rjy
         }
 
         //绘制MultiPolygon要素
-        private void DrawMultiPolygon(Graphics g, Geometry geom)
+        private void DrawMultiPolygon(Graphics g, Geometry geom, int index)
         {
             if (geom != null)
             {
@@ -265,7 +335,7 @@ namespace GISProject_rjy
                     sub_geom = geom.GetGeometryRef(j);
                     if (sub_geom != null)
                     {
-                        DrawPolygon(g, sub_geom);
+                        DrawPolygon(g, sub_geom, index);
                     }
                 }
             }
@@ -275,6 +345,7 @@ namespace GISProject_rjy
         private void DrawShpLayer(Graphics g, MapLayer curLayer)
         {
             Ogr.RegisterAll();
+            OSGeo.GDAL.Gdal.SetConfigOption("GDAL_DATA", @".\gdal\data");
             DataSource ds = Ogr.Open(curLayer.FilePath, 0);
             //遍历每个图层
             for (int i = 0; i < ds.GetLayerCount(); i++)
@@ -282,6 +353,7 @@ namespace GISProject_rjy
                 Layer layer = ds.GetLayerByIndex(i);
                 Feature feature;
                 //遍历图层中每个要素
+                int fid = 0;
                 while ((feature = layer.GetNextFeature()) != null)
                 {
                     Geometry geom = feature.GetGeometryRef();
@@ -289,11 +361,12 @@ namespace GISProject_rjy
                     {
                         string type = geom.GetGeometryName();
                         if (type == "POLYGON")
-                            DrawPolygon(g, geom);
+                            DrawPolygon(g, geom, i);
                         else if (type == "MULTIPOLYGON")
-                            DrawMultiPolygon(g, geom);
+                            DrawMultiPolygon(g, geom, i);
                         else if (type == "POINT")
-                            DrawPoint(g, geom);
+                            DrawPoint(g, geom, i, fid);
+                        ++fid;
                     }
                 }
             }
