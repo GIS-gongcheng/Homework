@@ -14,149 +14,187 @@ namespace GISProject_rjy
         string connectionStringStr;
         string sqlStr;
         NpgsqlConnection Conn = new NpgsqlConnection();
-        DataSet DS;
-        bool ECode;
-        string ErrString;
+        //DataSet DS;
+        //bool ECode;
+        //string ErrString;
 
         public DBConnector()
         {
             //默认连接本机数据库mypostdb
             connectionStringStr = "UserID=postgres;Password=123456;Server=127.0.0.1;Port=5432;Database=mypostdb;";
         }
+        
+
+        
 
         /// <summary>
-        /// 执行查询，返回数据集
+        /// 执行sql语句
         /// </summary>
         /// <param name="sql"></param>
-        /// <returns></returns>
-
-        public DataSet GetRecordSet(string sql)
-        {
-            NpgsqlCommand sqlCmd = new NpgsqlCommand();
-            sqlCmd.Connection = Conn;
-            sqlCmd.CommandText = sql;
-            try
-            {
-                NpgsqlDataAdapter adp = new NpgsqlDataAdapter(sqlCmd);
-                DS = new DataSet();
-                adp.Fill(DS);
-            }
-            catch (Exception e)
-            {
-                ErrString = e.Message;
-                ECode = true;
-                return null;
-            }
-            return DS;
-        }
-
-        public DataTable GetShpSet()
+        public void ExecuteSQL(string sql)
         {
             NpgsqlCommand cmd = null;
             NpgsqlConnection cnn = null;
-            NpgsqlDataAdapter adp = null;
-            DataSet ds = new DataSet();
-            DataTable dt = new DataTable();
-            NpgsqlDataReader dr = null;
-            string s1, s2, s3;
-
-            sqlStr = "select tablename from pg_tables where schemaname='public';";
-            //sqlStr = "select * from cyclone;";
             try
             {
                 cnn = new NpgsqlConnection(connectionStringStr);
                 cnn.Open();
 
-                cmd = new NpgsqlCommand(sqlStr, cnn);
-                dr = cmd.ExecuteReader();
-                adp = new NpgsqlDataAdapter(sqlStr,cnn);
-                //DataSet ds = new DataSet();
-                adp.Fill(ds);
-                dr.Read();
-                int i = 0;
-                while(dr.Read())
-                {
-                    if(i == 0)
-                    {
-                        s1 = dr.GetString(0).ToString();
-                    }
-                    else if(i == 1)
-                    {
-                        s2 = dr.GetString(0).ToString();
-                    }
-                    else if(i == 2)
-                    {
-                        s3 = dr.GetString(0).ToString();
-                    }
-                    i++;
-                }
+                cmd = new NpgsqlCommand(sql, cnn);
+                cmd.ExecuteNonQuery();
 
             }
             catch (Exception error)
             {
                 System.Console.WriteLine(error.Message);
             }
-            return dt;
-        }
-
-        /// <summary>
-        /// 执行sql语句
-        /// </summary>
-        /// <param name="Sqls"></param>
-        public void ExecuteSQL(string Sqls)
-        {
-            NpgsqlCommand sqlCmd = new NpgsqlCommand();
-            sqlCmd.Connection = Conn;
-            sqlCmd.CommandText = Sqls;
-            sqlCmd.CommandType = CommandType.Text;
-            try
-            {
-                sqlCmd.ExecuteNonQuery();
-            }
-            catch (Exception e)
-            {
-                ErrString = e.Message;
-                ECode = true;
-            }
         }
 
         /// <summary>
         /// 执行查询，返回DataReader
         /// </summary>
-        /// <param name="Sqls"></param>
+        /// <param name="sql"></param>
         /// <returns></returns>
-        public NpgsqlDataReader DBDataReader(string Sqls)
+        public NpgsqlDataReader DBDataReader(string sql)
         {
-            NpgsqlCommand sqlCmd = new NpgsqlCommand();
-            sqlCmd.Connection = Conn;
-            sqlCmd.CommandText = Sqls;
-            sqlCmd.CommandType = CommandType.Text;
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
             try
             {
-                return sqlCmd.ExecuteReader(CommandBehavior.CloseConnection);
+                cnn = new NpgsqlConnection(connectionStringStr);
+                cnn.Open();
+
+                cmd = new NpgsqlCommand(sql, cnn);
+                return cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
             }
-            catch (Exception e)
+            catch (Exception error)
             {
-                ErrString = e.Message;
-                ECode = true;
+                System.Console.WriteLine(error.Message);
                 return null;
             }
         }
 
+
+
         /// <summary>
-        /// 向数据库中写入海南各县的平均高程、最大高程、最小高程、平均风速、最大风速、最小风速
+        /// 向数据库中添加新表高程统计数据，包括海南各县的code和平均高程、最大高程、最小高程
         /// </summary>
-        /// <param name="avgDEM"></param>
-        /// <param name="maxDEM"></param>
-        /// <param name="minDEM"></param>
-        /// <param name="avgSpeed"></param>
-        /// <param name="maxSpeed"></param>
-        /// <param name="minSpeed"></param>
-        public void InsertInfo(double avgDEM,double maxDEM,double minDEM,double avgSpeed,double maxSpeed,double minSpeed)
+        public void AddDEMTable()
         {
-            //稍后补上
+            //首先向数据库里添加一个空表
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            sqlStr = "create table DEMstatistics(" +
+                "code character varying(6)," +
+                "avgDEM numeric,maxDEM numeric,minDEM numeric); ";
+            try
+            {
+                cnn = new NpgsqlConnection(connectionStringStr);
+                cnn.Open();
+
+                cmd = new NpgsqlCommand(sqlStr, cnn);
+                cmd.ExecuteNonQuery();
+
+            }
+            catch (Exception error)
+            {
+                System.Console.WriteLine(error.Message);
+            }
         }
 
+
+        /// <summary>
+        /// 向数据库中添加新表风速统计数据，包括海南各县的code和平均风速、最大风速、最小风速
+        /// </summary>
+        public void AddSpeedTable()
+        {
+            //首先向数据库里添加一个空表
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            sqlStr = "create table WindSpeedStatistics(" +
+                "code character varying(6)," +
+                "avgSpeed numeric,maxSpeed numeric,minSpeed numeric); ";
+            try
+            {
+                cnn = new NpgsqlConnection(connectionStringStr);
+                cnn.Open();
+
+                cmd = new NpgsqlCommand(sqlStr, cnn);
+                cmd.ExecuteNonQuery();
+
+            }
+            catch (Exception error)
+            {
+                System.Console.WriteLine(error.Message);
+            }
+        }
+
+        /// <summary>
+        /// 将高程统计数据导入数据库中
+        /// </summary>
+        /// <param name="info"></param>
+        public void InsertDEMInfo(List<float[]> info)
+        {
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            int i,j;
+            for(i = 0;i < info.Count;i++)
+            {
+                sqlStr = "insert into DEMstatistics values ('";
+                for(j=0;j<3;j++)
+                {
+                    sqlStr += info[i][j].ToString() + "','";
+                }
+                sqlStr += info[i][3].ToString() + "');";
+                try
+                {
+                    cnn = new NpgsqlConnection(connectionStringStr);
+                    cnn.Open();
+
+                    cmd = new NpgsqlCommand(sqlStr, cnn);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (Exception error)
+                {
+                    System.Console.WriteLine(error.Message);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 将风速统计数据导入数据库中
+        /// </summary>
+        /// <param name="info"></param>
+        public void InsertSpeedInfo(List<float[]> info)
+        {
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            int i, j;
+            for (i = 0; i < info.Count; i++)
+            {
+                sqlStr = "insert into WindSpeedStatistics values ('";
+                for (j = 0; j < 3; j++)
+                {
+                    sqlStr += info[i][j].ToString() + "','";
+                }
+                sqlStr += info[i][3].ToString() + "');";
+                try
+                {
+                    cnn = new NpgsqlConnection(connectionStringStr);
+                    cnn.Open();
+
+                    cmd = new NpgsqlCommand(sqlStr, cnn);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (Exception error)
+                {
+                    System.Console.WriteLine(error.Message);
+                }
+            }
+        }
 
         public void DBClose()
         {
@@ -166,19 +204,10 @@ namespace GISProject_rjy
             }
             catch (Exception e)
             {
-                ErrString = e.Message;
-                ECode = true;
+                System.Console.WriteLine(e.Message);
             }
         }
-
-        public bool ErrorCode()
-        {
-            return ECode;
-        }
-        public string ErrMessage()
-        {
-            return ErrString;
-        }
+        
 
     }
 }
