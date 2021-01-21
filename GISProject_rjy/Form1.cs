@@ -296,7 +296,7 @@ namespace GISProject_rjy
 
         private void 导出CountyHainanToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ImportProvince == true)
+            if (ImportCounty == true)
             {
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
                     "pgsql2shp -f D:\\data\\test\\county_hainan.shp -u postgres mypostdb county_hainan";
@@ -329,7 +329,7 @@ namespace GISProject_rjy
 
         private void 导出CycloneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ImportProvince == true)
+            if (ImportCyclone == true)
             {
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
                     "pgsql2shp -f D:\\data\\test\\cyclone.shp -u postgres mypostdb cyclone";
@@ -359,5 +359,17 @@ namespace GISProject_rjy
                 MessageBox.Show("请先将矢量数据导入数据库！");
             }
         }
+
+        /**private void 将结果导入数据库ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DBConnector dbConnector = new DBConnector();
+            //添加新表
+            dbConnector.AddDEMTable();
+            List<float[]> info = new List<float[]>();
+            //向新表中插入数据
+            dbConnector.InsertDEMInfo(info);
+            MessageBox.Show("统计结果已经成功导入数据库！");
+            dbConnector.DBClose();
+        }**/
     }
 }
