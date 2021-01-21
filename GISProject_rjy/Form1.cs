@@ -326,6 +326,30 @@ namespace GISProject_rjy
             }
         }
 
+        private void 统计分析ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SelectLayer selFrm = new SelectLayer(mapControl);
+            if (selFrm.ShowDialog(this) == DialogResult.OK)
+            {
+                int shpIndex = 0, tifIndex = 0;
+                for (int i = 0; i < mapControl._MapLayers.Count(); i++)
+                {
+                    if (mapControl._MapLayers[i].Name == selFrm.cb1)
+                        shpIndex = i;
+                    else if (mapControl._MapLayers[i].Name == selFrm.cb2)
+                        tifIndex = i;
+                }
+                Dataset ds = Gdal.Open(mapControl._MapLayers[tifIndex].FilePath, Access.GA_ReadOnly);
+                DataSource ds2 = Ogr.Open(mapControl._MapLayers[shpIndex].FilePath, 0);
+                Layer layer = ds2.GetLayerByIndex(0);
+                Statistic statistic = new Statistic();
+                //code-ave-max-min-count(最后一列count是像元数需要删去)
+                List<float[]> result = statistic.ComputeStatistic(layer, ds);
+
+            }
+
+        }
+
         /**private void 将结果导入数据库ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DBConnector dbConnector = new DBConnector();

@@ -109,6 +109,13 @@
     <Compile Include="MapLayer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Statistic.cs" />
+    <Compile Include="StatisticResult.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="StatisticResult.Designer.cs">
+      <DependentUpon>StatisticResult.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -125,6 +132,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="StatisticResult.resx">
+      <DependentUpon>StatisticResult.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
