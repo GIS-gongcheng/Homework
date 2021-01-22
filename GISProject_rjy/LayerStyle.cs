@@ -85,6 +85,7 @@ namespace GISProject_rjy
                     }
                     public bool Enabled = false;
                     public List<ColorMapEntry> ColorMap = new List<ColorMapEntry>();
+                    public double Opacity = 1d;
 
                     public void AddColorMapEntry(string color, double opacity, double quantity)
                     {

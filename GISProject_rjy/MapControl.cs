@@ -443,6 +443,24 @@ namespace GISProject_rjy
                                 value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
                             newColor = Color.FromArgb(value, value, value);
                         }
+                        else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
+                        {
+                            if (MinMax[0] == -32768)
+                            {
+                                if (value == MinMax[0])
+                                {
+                                    value = 0;
+                                }
+                                else
+                                {
+                                    value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                }
+                            }
+                            else
+                                value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                            newColor = Color.FromArgb(value, value, value);
+                            newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
+                        }
                         else // 按照Style绘制
                         {
                             for (int eCount = 0; eCount < curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count - 1; ++eCount)

@@ -153,7 +153,7 @@ namespace GISProject_rjy
         {
             if (tVLayers.SelectedNode != null)
             {
-                mapControl.MapLayers[tVLayers.SelectedNode.Index].TransformToWebMercator();
+                MessageBox.Show("已将数据导出到" + mapControl.MapLayers[tVLayers.SelectedNode.Index].TransformToWebMercator());
             }
         }
 

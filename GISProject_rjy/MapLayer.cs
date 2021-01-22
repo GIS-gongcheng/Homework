@@ -15,7 +15,7 @@ namespace GISProject_rjy
     public class MapLayer
     {
         public string Name;
-        public string Type; // Tiff,Polygon,Point
+        public string Type; //Shp, Tiff
         public string FilePath;
         public bool Visible;
         public float _MinX, _MinY, _MaxX, _MaxY;
@@ -252,14 +252,21 @@ namespace GISProject_rjy
                                 else if (Rule[rCount].Name == "sld:RasterSymbolizer")
                                 {
                                     style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].RasterSymbol.Enabled = true;
-                                    XmlNodeList ColorMap = Rule[rCount].LastChild.ChildNodes;
-                                    for (int cCount = 0; cCount < ColorMap.Count; ++cCount)
+
+                                    if (Rule[rCount].LastChild.Name == "sld:ColorMap")
                                     {
-                                        style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].RasterSymbol.AddColorMapEntry
-                                            (ColorMap[cCount].Attributes["color"].Value,
-                                            Convert.ToDouble(ColorMap[cCount].Attributes["opacity"].Value),
-                                            Convert.ToDouble(ColorMap[cCount].Attributes["quantity"].Value));
+                                        XmlNodeList ColorMap = Rule[rCount].LastChild.ChildNodes;
+                                        for (int cCount = 0; cCount < ColorMap.Count; ++cCount)
+                                        {
+                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].RasterSymbol.AddColorMapEntry
+                                                (ColorMap[cCount].Attributes["color"].Value,
+                                                Convert.ToDouble(ColorMap[cCount].Attributes["opacity"].Value),
+                                                Convert.ToDouble(ColorMap[cCount].Attributes["quantity"].Value));
+                                        }
                                     }
+                                    else if (Rule[rCount].LastChild.Name == "sld:Opacity")
+                                        style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].RasterSymbol.Opacity =
+                                            Convert.ToDouble(Rule[rCount].LastChild.FirstChild.Value);
                                 }
                             }
                         }
@@ -269,16 +276,35 @@ namespace GISProject_rjy
             Style = style;
         }
 
-        public void TransformToWebMercator()
+        /// <summary>
+        /// 将给定shp转换为Web Mercator投影
+        /// </summary>
+        /// <returns>文件名</returns>
+        public string TransformToWebMercator()
         {
             DataSource ds = Ogr.Open(FilePath, 0);
             Layer layer = ds.GetLayerByIndex(0);
-            SpatialReference sr = ds.GetLayerByIndex(0).GetSpatialRef();
+            SpatialReference sr = layer.GetSpatialRef();
             SpatialReference Mercator = new SpatialReference("");
             Mercator.ImportFromEPSG(3857); // Web Mercator
             Mercator.SetMercator(0d, 0d, 1d, 0d, 0d);
-            CoordinateTransformation ct = new CoordinateTransformation(sr, Mercator);
-            //Geometry geom = layer.
+            
+            string strDriver = "ESRI Shapefile";
+            OSGeo.OGR.Driver oDriver = Ogr.GetDriverByName(strDriver);
+            oDriver.Register();
+            DataSource ds1 = oDriver.CreateDataSource(FilePath.Remove(FilePath.Length - 4) + "_Mercator.shp", null);
+            Layer layer1 = ds1.CreateLayer(layer.GetName(), Mercator, layer.GetGeomType(), null);
+            Feature feature = layer.GetNextFeature();
+            //遍历图层中每个要素
+            while (feature != null)
+            {
+                Geometry geom = feature.GetGeometryRef();
+                geom.TransformTo(Mercator);
+                feature.SetGeometry(geom);
+                layer1.CreateFeature(feature);
+                feature = layer.GetNextFeature();
+            }
+            return FilePath.Remove(FilePath.Length - 4) + "_Mercator.shp";
         }
     }
 }
