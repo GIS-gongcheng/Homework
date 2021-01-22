@@ -154,7 +154,6 @@
             this.统计分析ToolStripMenuItem.Name = "统计分析ToolStripMenuItem";
             this.统计分析ToolStripMenuItem.Size = new System.Drawing.Size(130, 35);
             this.统计分析ToolStripMenuItem.Text = "统计分析";
-            this.统计分析ToolStripMenuItem.Click += new System.EventHandler(this.统计分析ToolStripMenuItem_Click);
             // 
             // 制图ToolStripMenuItem
             // 

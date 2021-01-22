@@ -19,6 +19,7 @@ namespace GISProject_rjy
         public string FilePath;
         public bool Visible;
         public float _MinX, _MinY, _MaxX, _MaxY;
+        //public bool Transformed = true; // 是否转换为Web Mercator投影
         public DataTable DT = new DataTable();   //图层的属性数据表
         public LayerStyle Style = new LayerStyle();
 
@@ -270,7 +271,14 @@ namespace GISProject_rjy
 
         public void TransformToWebMercator()
         {
-
+            DataSource ds = Ogr.Open(FilePath, 0);
+            Layer layer = ds.GetLayerByIndex(0);
+            SpatialReference sr = ds.GetLayerByIndex(0).GetSpatialRef();
+            SpatialReference Mercator = new SpatialReference("");
+            Mercator.ImportFromEPSG(3857); // Web Mercator
+            Mercator.SetMercator(0d, 0d, 1d, 0d, 0d);
+            CoordinateTransformation ct = new CoordinateTransformation(sr, Mercator);
+            //Geometry geom = layer.
         }
     }
 }

@@ -367,7 +367,7 @@ namespace GISProject_rjy
         }
 
         //绘制矢量图层
-        private void DrawShpLayer(Graphics g, MapLayer curLayer)
+        private void DrawShpLayer(Graphics g, MapLayer curLayer, int index)
         {
             Ogr.RegisterAll();
             OSGeo.GDAL.Gdal.SetConfigOption("GDAL_DATA", @".\gdal\data");
@@ -386,18 +386,16 @@ namespace GISProject_rjy
                     {
                         string type = geom.GetGeometryName();
                         if (type == "POLYGON")
-                            DrawPolygon(g, geom, i);
+                            DrawPolygon(g, geom, index);
                         else if (type == "MULTIPOLYGON")
-                            DrawMultiPolygon(g, geom, i);
+                            DrawMultiPolygon(g, geom, index);
                         else if (type == "POINT")
-                            DrawPoint(g, geom, i, fid);
+                            DrawPoint(g, geom, index, fid);
                         ++fid;
                     }
                 }
             }
         }
-
-
 
         //绘制tiff图层
         private void DrawTiffLayer(Graphics g, MapLayer curLayer, int index)
@@ -520,10 +518,10 @@ namespace GISProject_rjy
         //母版重绘
         private void MapControl_Paint_1(object sender, PaintEventArgs e)
         {
-            for (int i = 0; i < _MapLayers.Count(); i++)
+            for (int i = _MapLayers.Count() - 1; i >= 0; i--)
             {
                 if (_MapLayers[i].Type == "Shp")
-                    DrawShpLayer(e.Graphics, _MapLayers[i]);
+                    DrawShpLayer(e.Graphics, _MapLayers[i], i);
                 else if (_MapLayers[i].Type == "Tiff")
                 {
                     DrawTiffLayer(e.Graphics, _MapLayers[i], i);
