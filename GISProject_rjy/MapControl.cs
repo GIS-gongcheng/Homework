@@ -442,17 +442,7 @@ namespace GISProject_rjy
                         {
                             if (MapLayers[index].Style.Styles.Count == 0)
                             {
-                                int color = 0;
-                                if (MinMax[0] == -32768)
-                                {
-                                    if (value > MinMax[0])
-                                    {
-                                        color = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
-                                    }
-                                }
-                                else
-                                    value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                                int value1 = Convert.ToInt32(value);
+                                int value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
                                 newColor = Color.FromArgb(value1, value1, value1);
                             }
                             else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
@@ -488,6 +478,8 @@ namespace GISProject_rjy
                                 }
                             }
                         }
+                        g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
+
                         // TODO FillRectangle
                     }
                 }
@@ -550,7 +542,7 @@ namespace GISProject_rjy
         //母版重绘
         private void MapControl_Paint_1(object sender, PaintEventArgs e)
         {
-            for (int i = _MapLayers.Count() - 1; i >= 0; i--)
+            for (int i = 0; i < _MapLayers.Count(); i++)
             {
                 if (_MapLayers[i].Type == "Shp")
                     DrawShpLayer(e.Graphics, _MapLayers[i], i);
