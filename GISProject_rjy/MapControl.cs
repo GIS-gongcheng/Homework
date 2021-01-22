@@ -413,9 +413,13 @@ namespace GISProject_rjy
                 Dataset ds = Gdal.Open(curLayer.FilePath, Access.GA_ReadOnly);
                 int imgWidth = ds.RasterXSize; 
                 int imgHeight = ds.RasterYSize; 
-                int[] r = new int[width * height];
+                float[] r = new float[width * height];
                 Band band = ds.GetRasterBand(1);
                 band.ReadRaster(0, 0, imgWidth, imgHeight, r, width, height, 0, 0);
+                //获取NoData值
+                double nodata;
+                int handle = 1;
+                band.GetNoDataValue(out nodata, out handle);
                 double[] MinMax = { 0, 0 };
                 band.ComputeRasterMinMax(MinMax, 0);
                 int i, j;
@@ -423,40 +427,24 @@ namespace GISProject_rjy
                 {
                     for (j = 0; j < height; j++)
                     {
-                        int value = Convert.ToInt32(r[i + j * width]);    //像元值
-                        Color newColor = Color.Transparent;
-                                                                          //拉伸
-                        if (MapLayers[index].Style.Styles.Count == 0)
+                        float value = r[i + j * width];    //像元值
+                        if (value > nodata + 1)
                         {
+                            int color = 0;
                             if (MinMax[0] == -32768)
                             {
-                                if (value == MinMax[0])
+                                if (value > MinMax[0])
                                 {
-                                    value = 0;
-                                }
-                                else
-                                {
-                                    value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                    color = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
                                 }
                             }
                             else
-                                value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                            newColor = Color.FromArgb(value, value, value);
+                                color = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                            Color newColor = Color.FromArgb(color, color, color);
+                            g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
+
                         }
-                        else // 按照Style绘制
-                        {
-                            for (int eCount = 0; eCount < curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count - 1; ++eCount)
-                            {
-                                if (value >= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Quantity &&
-                                    value <= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount + 1].Quantity)
-                                {
-                                    newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Opacity),
-                                        ColorTranslator.FromHtml(curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Color));
-                                    break;
-                                }
-                            }
-                        }
-                        g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
+
                     }
                 }
             }

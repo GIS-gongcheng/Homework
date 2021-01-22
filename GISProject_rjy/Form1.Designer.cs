@@ -66,8 +66,7 @@
             this.制图ToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(6, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1524, 39);
+            this.menuStrip1.Size = new System.Drawing.Size(1524, 42);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -78,7 +77,7 @@
             this.导入数据库ToolStripMenuItem,
             this.导出数据库shp文件ToolStripMenuItem});
             this.文件ToolStripMenuItem.Name = "文件ToolStripMenuItem";
-            this.文件ToolStripMenuItem.Size = new System.Drawing.Size(82, 35);
+            this.文件ToolStripMenuItem.Size = new System.Drawing.Size(82, 38);
             this.文件ToolStripMenuItem.Text = "文件";
             // 
             // 打开ToolStripMenuItem
@@ -145,26 +144,27 @@
             // 投影变换ToolStripMenuItem
             // 
             this.投影变换ToolStripMenuItem.Name = "投影变换ToolStripMenuItem";
-            this.投影变换ToolStripMenuItem.Size = new System.Drawing.Size(130, 35);
+            this.投影变换ToolStripMenuItem.Size = new System.Drawing.Size(130, 38);
             this.投影变换ToolStripMenuItem.Text = "投影变换";
             this.投影变换ToolStripMenuItem.Click += new System.EventHandler(this.投影变换ToolStripMenuItem_Click);
             // 
             // 统计分析ToolStripMenuItem
             // 
             this.统计分析ToolStripMenuItem.Name = "统计分析ToolStripMenuItem";
-            this.统计分析ToolStripMenuItem.Size = new System.Drawing.Size(130, 35);
+            this.统计分析ToolStripMenuItem.Size = new System.Drawing.Size(130, 38);
             this.统计分析ToolStripMenuItem.Text = "统计分析";
+            this.统计分析ToolStripMenuItem.Click += new System.EventHandler(this.统计分析ToolStripMenuItem_Click_1);
             // 
             // 制图ToolStripMenuItem
             // 
             this.制图ToolStripMenuItem.Name = "制图ToolStripMenuItem";
-            this.制图ToolStripMenuItem.Size = new System.Drawing.Size(82, 35);
+            this.制图ToolStripMenuItem.Size = new System.Drawing.Size(82, 38);
             this.制图ToolStripMenuItem.Text = "制图";
             // 
             // tVLayers
             // 
             this.tVLayers.Location = new System.Drawing.Point(8, 52);
-            this.tVLayers.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tVLayers.Margin = new System.Windows.Forms.Padding(4);
             this.tVLayers.Name = "tVLayers";
             this.tVLayers.Size = new System.Drawing.Size(322, 918);
             this.tVLayers.TabIndex = 1;
@@ -238,7 +238,7 @@
             this.Controls.Add(this.tVLayers);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximumSize = new System.Drawing.Size(1550, 1030);
             this.MinimumSize = new System.Drawing.Size(1550, 1030);
             this.Name = "Form1";

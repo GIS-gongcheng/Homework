@@ -226,8 +226,6 @@ namespace GISProject_rjy
             }
         }
 
-        
-
         private void 导出ProvinceHainanToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(ImportProvince == true)
@@ -328,7 +326,7 @@ namespace GISProject_rjy
             }
         }
 
-        private void 统计分析ToolStripMenuItem_Click(object sender, EventArgs e)
+        private void 统计分析ToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             SelectLayer selFrm = new SelectLayer(mapControl);
             if (selFrm.ShowDialog(this) == DialogResult.OK)
@@ -344,30 +342,37 @@ namespace GISProject_rjy
                 Dataset ds = Gdal.Open(mapControl._MapLayers[tifIndex].FilePath, Access.GA_ReadOnly);
                 DataSource ds2 = Ogr.Open(mapControl._MapLayers[shpIndex].FilePath, 0);
                 Layer layer = ds2.GetLayerByIndex(0);
-                Statistic statistic = new Statistic();
-                //code-ave-max-min-count(最后一列count是像元数需要删去)
-                List<float[]> result = statistic.ComputeStatistic(layer, ds);
+                //判断二者坐标系是否一致
+                SpatialReference SrsLayer = layer.GetSpatialRef();
+                SpatialReference SrsRas = new SpatialReference(ds.GetProjection());
+                if (SrsLayer.IsSame(SrsRas) == 1)
+                {
+                    Statistic statistic = new Statistic();
+                    //code-ave-max-min-count(最后一列count是像元数需要删去)
+                    List<float[]> result = statistic.ComputeStatistic(layer, ds);
 
-                DBConnector dbConnector = new DBConnector();
-                
-                if(selFrm.cb2 == "Hainan_DEM_100m.tif")//统计DEM数据
-                {
-                    //添加新表
-                    dbConnector.AddDEMTable();
-                    //向新表中插入数据
-                    dbConnector.InsertDEMInfo(result);
-                    MessageBox.Show("统计结果已经成功导入数据库！");
+                    DBConnector dbConnector = new DBConnector();
+
+                    if (selFrm.cb2 == "Hainan_DEM_100m.tif")//统计DEM数据
+                    {
+                        //添加新表
+                        dbConnector.AddDEMTable();
+                        //向新表中插入数据
+                        dbConnector.InsertDEMInfo(result);
+                        MessageBox.Show("统计结果已经成功导入数据库！");
+                    }
+                    else if (selFrm.cb2 == "windfield.tif")//统计风速数据
+                    {
+                        //添加新表
+                        dbConnector.AddSpeedTable();
+                        //向新表中插入数据
+                        dbConnector.InsertSpeedInfo(result);
+                        MessageBox.Show("统计结果已经成功导入数据库！");
+                    }
                 }
-                else if(selFrm.cb2 == "windfield.tif")//统计风速数据
-                {
-                    //添加新表
-                    dbConnector.AddSpeedTable();
-                    //向新表中插入数据
-                    dbConnector.InsertSpeedInfo(result);
-                    MessageBox.Show("统计结果已经成功导入数据库！");
-                }
+                else
+                    MessageBox.Show("数据坐标系不一致！");
             }
-
         }
     }
 }

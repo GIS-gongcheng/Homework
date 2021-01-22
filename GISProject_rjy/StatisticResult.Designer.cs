@@ -53,7 +53,7 @@
             this.dataGridView1.RowHeadersVisible = false;
             this.dataGridView1.RowHeadersWidth = 82;
             this.dataGridView1.RowTemplate.Height = 37;
-            this.dataGridView1.Size = new System.Drawing.Size(798, 438);
+            this.dataGridView1.Size = new System.Drawing.Size(798, 764);
             this.dataGridView1.TabIndex = 0;
             // 
             // Column1
@@ -90,8 +90,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 778);
             this.Controls.Add(this.dataGridView1);
+            this.MaximumSize = new System.Drawing.Size(826, 849);
+            this.MinimumSize = new System.Drawing.Size(826, 849);
             this.Name = "StatisticResult";
             this.Text = "StatisticResult";
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
