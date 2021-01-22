@@ -13,6 +13,7 @@ using OSGeo.OGR;
 using OSGeo.OSR;
 using OSGeo.GDAL;
 using System.Diagnostics;
+using GISProject_rjy;
 
 namespace GISProject_rjy
 {
