@@ -74,7 +74,32 @@ namespace GISProject_rjy
             }
         }
 
+        /// <summary>
+        /// 向数据库中添加一个新表，用于存储海南各县的code和数据统计值（平均、最大、最小）
+        /// </summary>
+        /// <param name="name"></param>
+        public void AddTable(string name)
+        {
+            //首先向数据库里添加一个空表
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            sqlStr = "create table " + name +
+                "_statistics(code character varying(6)," +
+                "avg numeric,max numeric,min numeric); ";
+            try
+            {
+                cnn = new NpgsqlConnection(connectionStringStr);
+                cnn.Open();
 
+                cmd = new NpgsqlCommand(sqlStr, cnn);
+                cmd.ExecuteNonQuery();
+
+            }
+            catch (Exception error)
+            {
+                System.Console.WriteLine(error.Message);
+            }
+        }
 
         /// <summary>
         /// 向数据库中添加新表高程统计数据，包括海南各县的code和平均高程、最大高程、最小高程
@@ -195,6 +220,40 @@ namespace GISProject_rjy
             }
         }
 
-        
+
+        /// <summary>
+        /// 向新表中插入数据
+        /// </summary>
+        /// <param name="info"></param>
+        /// <param name="name"></param>
+        public void InsertInfo(List<float[]> info,string name)
+        {
+            NpgsqlCommand cmd = null;
+            NpgsqlConnection cnn = null;
+            int i, j;
+            for (i = 0; i < info.Count; i++)
+            {
+                sqlStr = "insert into "+name+"_statistics values ('";
+                for (j = 0; j < 3; j++)
+                {
+                    sqlStr += info[i][j].ToString() + "','";
+                }
+                sqlStr += info[i][3].ToString() + "');";
+                try
+                {
+                    cnn = new NpgsqlConnection(connectionStringStr);
+                    cnn.Open();
+
+                    cmd = new NpgsqlCommand(sqlStr, cnn);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (Exception error)
+                {
+                    System.Console.WriteLine(error.Message);
+                }
+            }
+        }
+
     }
 }

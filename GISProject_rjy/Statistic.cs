@@ -108,6 +108,10 @@ namespace GISProject_rjy
             Band bLayer = dsLayer.GetRasterBand(1);
             bRas.ReadRaster(xOffRas, yOffRas, width, height, rRas, width, height, 0, 0);
             bLayer.ReadRaster(xOffLayer, yOffLayer, width, height, rLayer, width, height, 0, 0);
+            //栅格文件NoData值
+            double nodata;
+            int handle = 1;
+            bRas.GetNoDataValue(out nodata, out handle);
             //逐个像元统计计算
             List<float[]> result = new List<float[]>();//code-sum-max-min-num
             for (int i = 0; i < rRas.Length; i++)
@@ -116,7 +120,7 @@ namespace GISProject_rjy
                 if (code > 0)
                 {
                     float value = rRas[i];
-                    if (value > -30000)
+                    if (value > -30000 && value > nodata + 1)
                     {
                         int j = 0;
                         for (; j < result.Count(); j++)
