@@ -440,52 +440,55 @@ namespace GISProject_rjy
                         float value = r[i + j * width];    //像元值
                         if (value > nodata + 1)
                         {
-                            int color = 0;
-                            if (MinMax[0] == -32768)
+                            if (MapLayers[index].Style.Styles.Count == 0)
                             {
-                                if (value > MinMax[0])
+                                int color = 0;
+                                if (MinMax[0] == -32768)
                                 {
-                                    color = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
-                                }
-                            }
-                            else
-                                value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                            int value1 = Convert.ToInt32(value);
-                            newColor = Color.FromArgb(value1, value1, value1);
-                        }
-                        else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
-                        {
-                            if (MinMax[0] == -32768)
-                            {
-                                if (value == MinMax[0])
-                                {
-                                    value = 0;
+                                    if (value > MinMax[0])
+                                    {
+                                        color = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                    }
                                 }
                                 else
-                                {
-                                    value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
-                                }
+                                    value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                                int value1 = Convert.ToInt32(value);
+                                newColor = Color.FromArgb(value1, value1, value1);
                             }
-                            else
-                                value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                            int value1 = Convert.ToInt32(value);
-                            newColor = Color.FromArgb(value1, value1, value1);
-                            newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
-                        }
-                        else // 按照Style绘制
-                        {
-                            for (int eCount = 0; eCount < curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count - 1; ++eCount)
+                            else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
                             {
-                                if (value >= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Quantity &&
-                                    value <= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount + 1].Quantity)
+                                if (MinMax[0] == -32768)
                                 {
-                                    newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Opacity),
-                                        ColorTranslator.FromHtml(curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Color));
-                                    break;
+                                    if (value == MinMax[0])
+                                    {
+                                        value = 0;
+                                    }
+                                    else
+                                    {
+                                        value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                    }
+                                }
+                                else
+                                    value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                                int value1 = Convert.ToInt32(value);
+                                newColor = Color.FromArgb(value1, value1, value1);
+                                newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
+                            }
+                            else // 按照Style绘制
+                            {
+                                for (int eCount = 0; eCount < curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count - 1; ++eCount)
+                                {
+                                    if (value >= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Quantity &&
+                                        value <= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount + 1].Quantity)
+                                    {
+                                        newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Opacity),
+                                            ColorTranslator.FromHtml(curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Color));
+                                        break;
+                                    }
                                 }
                             }
                         }
-
+                        // TODO FillRectangle
                     }
                 }
             }
