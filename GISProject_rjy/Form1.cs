@@ -13,6 +13,7 @@ using OSGeo.OGR;
 using OSGeo.OSR;
 using OSGeo.GDAL;
 using System.Diagnostics;
+using GISProject_rjy;
 
 namespace GISProject_rjy
 {
@@ -325,6 +326,48 @@ namespace GISProject_rjy
             {
                 MessageBox.Show("请先将矢量数据导入数据库！");
             }
+        }
+
+        private void 统计分析ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SelectLayer selFrm = new SelectLayer(mapControl);
+            if (selFrm.ShowDialog(this) == DialogResult.OK)
+            {
+                int shpIndex = 0, tifIndex = 0;
+                for (int i = 0; i < mapControl._MapLayers.Count(); i++)
+                {
+                    if (mapControl._MapLayers[i].Name == selFrm.cb1)
+                        shpIndex = i;
+                    else if (mapControl._MapLayers[i].Name == selFrm.cb2)
+                        tifIndex = i;
+                }
+                Dataset ds = Gdal.Open(mapControl._MapLayers[tifIndex].FilePath, Access.GA_ReadOnly);
+                DataSource ds2 = Ogr.Open(mapControl._MapLayers[shpIndex].FilePath, 0);
+                Layer layer = ds2.GetLayerByIndex(0);
+                Statistic statistic = new Statistic();
+                //code-ave-max-min-count(最后一列count是像元数需要删去)
+                List<float[]> result = statistic.ComputeStatistic(layer, ds);
+
+                DBConnector dbConnector = new DBConnector();
+                
+                if(selFrm.cb2 == "Hainan_DEM_100m.tif")//统计DEM数据
+                {
+                    //添加新表
+                    dbConnector.AddDEMTable();
+                    //向新表中插入数据
+                    dbConnector.InsertDEMInfo(result);
+                    MessageBox.Show("统计结果已经成功导入数据库！");
+                }
+                else if(selFrm.cb2 == "windfield.tif")//统计风速数据
+                {
+                    //添加新表
+                    dbConnector.AddSpeedTable();
+                    //向新表中插入数据
+                    dbConnector.InsertSpeedInfo(result);
+                    MessageBox.Show("统计结果已经成功导入数据库！");
+                }
+            }
+
         }
 
         private void 加载图层样式SLDToolStripMenuItem1_Click(object sender, EventArgs e)

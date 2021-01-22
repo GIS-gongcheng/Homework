@@ -413,10 +413,9 @@ namespace GISProject_rjy
                 width = (int)((MBR[2] - MBR[0]) / _DisplayScale);
                 height = (int)((MBR[3] - MBR[1]) / _DisplayScale);
                 Dataset ds = Gdal.Open(curLayer.FilePath, Access.GA_ReadOnly);
-                int imgWidth = ds.RasterXSize;   //影像宽 
-                int imgHeight = ds.RasterYSize;  //影像高
-                                                 //构建位图 
-                int[] r = new int[width * height];//(改为list)
+                int imgWidth = ds.RasterXSize; 
+                int imgHeight = ds.RasterYSize; 
+                int[] r = new int[width * height];
                 Band band = ds.GetRasterBand(1);
                 band.ReadRaster(0, 0, imgWidth, imgHeight, r, width, height, 0, 0);
                 double[] MinMax = { 0, 0 };

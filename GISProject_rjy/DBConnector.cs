@@ -13,7 +13,6 @@ namespace GISProject_rjy
     {
         string connectionStringStr;
         string sqlStr;
-        NpgsqlConnection Conn = new NpgsqlConnection();
         //DataSet DS;
         //bool ECode;
         //string ErrString;
@@ -196,18 +195,6 @@ namespace GISProject_rjy
             }
         }
 
-        public void DBClose()
-        {
-            try
-            {
-                Conn.Close();
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine(e.Message);
-            }
-        }
         
-
     }
 }
