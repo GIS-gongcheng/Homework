@@ -179,6 +179,15 @@ namespace GISProject_rjy
             Refresh();
         }
 
+        public Bitmap GetOutputBitmap()
+        {
+            Bitmap outputBmp = new Bitmap(this.Width, this.Height);
+            Graphics g = Graphics.FromImage(outputBmp);
+            g.Clear(this.BackColor);    //清空画布
+            g.DrawImage(mFeatures, 0, 0); //将缓冲区的位图直接贴到显示区
+            g.Dispose();
+            return outputBmp;
+        }
         #endregion
 
         #region 事件
@@ -423,6 +432,7 @@ namespace GISProject_rjy
                 double[] MinMax = { 0, 0 };
                 band.ComputeRasterMinMax(MinMax, 0);
                 int i, j;
+                Color newColor = Color.Transparent;
                 for (i = 0; i < width; i++)
                 {
                     for (j = 0; j < height; j++)
@@ -440,7 +450,8 @@ namespace GISProject_rjy
                             }
                             else
                                 value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                            newColor = Color.FromArgb(value, value, value);
+                            int value1 = Convert.ToInt32(value);
+                            newColor = Color.FromArgb(value1, value1, value1);
                         }
                         else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
                         {
@@ -457,7 +468,8 @@ namespace GISProject_rjy
                             }
                             else
                                 value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                            newColor = Color.FromArgb(value, value, value);
+                            int value1 = Convert.ToInt32(value);
+                            newColor = Color.FromArgb(value1, value1, value1);
                             newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
                         }
                         else // 按照Style绘制

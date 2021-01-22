@@ -365,5 +365,19 @@ namespace GISProject_rjy
                     MessageBox.Show("数据坐标系不一致！");
             }
         }
+
+        private void 制图ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveBitmapDialog.Filter = "bitmap(*.bmp)|*.bmp|All files(*.*)|*.*";
+            if (saveBitmapDialog.ShowDialog() == DialogResult.OK)
+            {
+                string picPath = saveBitmapDialog.FileName;
+                Bitmap bmp = mapControl.GetOutputBitmap();
+                //保存到磁盘文件
+                bmp.Save(picPath, System.Drawing.Imaging.ImageFormat.Bmp);
+                bmp.Dispose();
+                MessageBox.Show("位图导出完成！", "提示");
+            }
+        }
     }
 }
