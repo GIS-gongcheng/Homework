@@ -6,6 +6,9 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Data;
 using System.Xml;
+using OSGeo.OGR;
+using OSGeo.OSR;
+using OSGeo.GDAL;
 
 namespace GISProject_rjy
 {
@@ -16,18 +19,8 @@ namespace GISProject_rjy
         public string FilePath;
         public bool Visible;
         public float _MinX, _MinY, _MaxX, _MaxY;
-        //public SymbolType _Symbol;                  //图层的符号
-        public float _Symbolsize;                     //符号大小（单位-像素,点的大小或线宽）
-        //public List<Geometry> _Features = new List<Geometry>();    //图层的要素列表
         public DataTable DT = new DataTable();   //图层的属性数据表
-        public int FIDused = 0;                   //已使用过的FID编号
-        //public Renderer _renderer;                 //图层的渲染器
-
         public LayerStyle Style = new LayerStyle();
-        public bool _LableUsed = false;        //是否显示注记
-        public string _LableField = "";        //注记字段
-        public Color _LableColor = Color.Black;//注记颜色
-        public float _LableSize = 8;          //注记大小
 
         public MapLayer(string name, string type, string filePath)
         {
@@ -58,6 +51,9 @@ namespace GISProject_rjy
             XmlDocument sldDoc = new XmlDocument();
             sldDoc.Load(FilePath);
             XmlNamespaceManager nsp = new XmlNamespaceManager(sldDoc.NameTable);
+            nsp.AddNamespace("sld", "http://www.opengis.net/sld");
+            nsp.AddNamespace("ogc", "http://www.opengis.net/ogc");
+            nsp.AddNamespace("gml", "http://www.opengis.net/gml");
             XmlElement root = sldDoc.DocumentElement;
             XmlNodeList FeatStyleList = root.ChildNodes[0].ChildNodes[1].ChildNodes;
             LayerStyle style = new LayerStyle();
@@ -126,40 +122,78 @@ namespace GISProject_rjy
                                 // 点标识
                                 else if (Rule[rCount].Name == "sld:PointSymbolizer")
                                 {
-                                    XmlNodeList Symbols = Rule[rCount].FirstChild.FirstChild.ChildNodes;
-                                    for (int sCount = 0; sCount < Symbols.Count; ++sCount)
+                                    for (int rrCount = 0; rrCount < Rule[rCount].ChildNodes.Count; ++rrCount)
                                     {
-                                        if (Symbols[sCount].Name == "sld:WellKnownName")
+                                        if (Rule[rCount].ChildNodes[rrCount].Name == "sld:Graphic")
                                         {
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Name = Symbols[sCount].Value;
+                                            XmlNodeList Graphics = Rule[rCount].ChildNodes[rrCount].ChildNodes;
+                                            for (int gCount = 0; gCount < Graphics.Count; ++gCount)
+                                            {
+                                                if (Graphics[gCount].Name == "sld:Mark")
+                                                {
+                                                    XmlNodeList Symbols = Graphics[gCount].ChildNodes;
+                                                    for (int sCount = 0; sCount < Symbols.Count; ++sCount)
+                                                    {
+                                                        if (Symbols[sCount].Name == "sld:WellKnownName")
+                                                        {
+                                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Name = Symbols[sCount].Value;
+                                                        }
+                                                        // 填充
+                                                        else if (Symbols[sCount].Name == "sld:Fill")
+                                                        {
+                                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Enabled = true;
+                                                            XmlNodeList FillAttributes = Symbols[sCount].ChildNodes;
+                                                            for (int aCount = 0; aCount < FillAttributes.Count; ++aCount)
+                                                            {
+                                                                if (FillAttributes[aCount].Attributes["name"].Value == "fill")
+                                                                {
+                                                                    string Color = FillAttributes[aCount].FirstChild.Value;
+                                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Color = Color;
+                                                                }
+                                                                else if (FillAttributes[aCount].Attributes["name"].Value == "fill-opacity")
+                                                                {
+                                                                    double Opacity = Convert.ToDouble(FillAttributes[aCount].FirstChild.Value);
+                                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Opacity = Opacity;
+                                                                }
+                                                            }
+                                                        }
+                                                        // 轮廓
+                                                        else if (Symbols[sCount].Name == "sld:Stroke")
+                                                        {
+                                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Enabled = true;
+                                                            XmlNodeList StrokeAttributes = Symbols[sCount].ChildNodes;
+                                                            for (int aCount = 0; aCount < StrokeAttributes.Count; ++aCount)
+                                                            {
+                                                                if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke")
+                                                                {
+                                                                    string Color = StrokeAttributes[aCount].FirstChild.Value;
+                                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Color = Color;
+                                                                }
+                                                                else if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke-opacity")
+                                                                {
+                                                                    double Opacity = Convert.ToDouble(StrokeAttributes[aCount].FirstChild.Value);
+                                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Opacity = Opacity;
+                                                                }
+                                                                else if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke-width")
+                                                                {
+                                                                    double Width = Convert.ToDouble(StrokeAttributes[aCount].FirstChild.Value);
+                                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Width = Width;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else if (Graphics[gCount].Name == "sld:Size")
+                                                {
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.SizePropertyName
+                                                        = Graphics[gCount].FirstChild.FirstChild.Value;
+                                                }
+                                            }
                                         }
-                                        // 填充
-                                        else if (Symbols[sCount].Name == "sld:Fill")
-                                        {
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Enabled = true;
-                                            string Color = Symbols[sCount].FirstChild.FirstChild.Value;
-                                            double Opacity = Convert.ToDouble(Symbols[sCount].LastChild.FirstChild.Value);
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Color = Color;
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Fill.Opacity = Opacity;
-                                        }
-                                        // 轮廓
-                                        else if (Symbols[sCount].Name == "sld:Stroke")
-                                        {
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Enabled = true;
-                                            string Color = Symbols[sCount].FirstChild.FirstChild.Value;
-                                            double Width = Convert.ToDouble(Symbols[sCount].LastChild.FirstChild.Value);
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Color = Color;
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.Stroke.Width = Width;
-                                        }
-                                    }
-                                    // 大小
-                                    if (Rule[rCount].FirstChild.LastChild.Name == "sld:Size")
-                                    {
-                                        style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PointSymbol.SizePropertyName = Rule[rCount].FirstChild.LastChild.FirstChild.FirstChild.Value;
                                     }
                                 }
                                 // 多边形标识
-                                else if (Rule[rCount].Name == "sld:PointSymbolizer")
+                                else if (Rule[rCount].Name == "sld:PolygonSymbolizer")
                                 {
                                     XmlNodeList Symbols = Rule[rCount].ChildNodes;
                                     for (int sCount = 0; sCount < Symbols.Count; ++sCount)
@@ -172,29 +206,43 @@ namespace GISProject_rjy
                                         else if (Symbols[sCount].Name == "sld:Fill")
                                         {
                                             style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Fill.Enabled = true;
-                                            string Color = Symbols[sCount].ChildNodes[0].Attributes["fill"].Value;
-                                            double Opacity = Convert.ToDouble(Symbols[sCount].ChildNodes[0].Attributes["fill-opacity"].Value);
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Fill.Color = Color;
-                                            style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Fill.Opacity = Opacity;
+                                            XmlNodeList FillAttributes = Symbols[sCount].ChildNodes;
+                                            for (int aCount = 0; aCount < FillAttributes.Count; ++aCount)
+                                            {
+                                                if (FillAttributes[aCount].Attributes["name"].Value == "fill")
+                                                {
+                                                    string Color = FillAttributes[aCount].FirstChild.Value;
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Fill.Color = Color;
+                                                }
+                                                else if (FillAttributes[aCount].Attributes["name"].Value == "fill-opacity")
+                                                {
+                                                    double Opacity = Convert.ToDouble(FillAttributes[aCount].FirstChild.Value);
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Fill.Opacity = Opacity;
+                                                }
+                                            }
                                         }
                                         // 轮廓
                                         else if (Symbols[sCount].Name == "sld:Stroke")
                                         {
                                             style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Enabled = true;
-                                            if (Symbols[sCount].ChildNodes[1].Attributes["stroke"].Value != null)
+                                            XmlNodeList StrokeAttributes = Symbols[sCount].ChildNodes;
+                                            for (int aCount = 0; aCount < StrokeAttributes.Count; ++aCount)
                                             {
-                                                string Color = Symbols[sCount].ChildNodes[1].Attributes["stroke"].Value;
-                                                style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Color = Color;
-                                            }
-                                            if (Symbols[sCount].ChildNodes[1].Attributes["stroke-width"].Value != null)
-                                            {
-                                                double Width = Convert.ToDouble(Symbols[sCount].ChildNodes[1].Attributes["stroke-width"].Value);
-                                                style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Width = Width;
-                                            }
-                                            if (Symbols[sCount].ChildNodes[1].Attributes["stroke-opacity"].Value != null)
-                                            {
-                                                double Opacity = Convert.ToDouble(Symbols[sCount].ChildNodes[1].Attributes["stroke-opacity"].Value);
-                                                style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Opacity = Opacity;
+                                                if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke")
+                                                {
+                                                    string Color = StrokeAttributes[aCount].FirstChild.Value;
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Color = Color;
+                                                }
+                                                else if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke-opacity")
+                                                {
+                                                    double Opacity = Convert.ToDouble(StrokeAttributes[aCount].FirstChild.Value);
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Opacity = Opacity;
+                                                }
+                                                else if (StrokeAttributes[aCount].Attributes["name"].Value == "stroke-width")
+                                                {
+                                                    double Width = Convert.ToDouble(StrokeAttributes[aCount].FirstChild.Value);
+                                                    style.Styles[0].Rules[style.Styles[0].Rules.Count - 1].PolygonSymbol.Stroke.Width = Width;
+                                                }
                                             }
                                         }
                                     }
@@ -218,6 +266,11 @@ namespace GISProject_rjy
                 }
             }
             Style = style;
+        }
+
+        public void TransformToWebMercator()
+        {
+
         }
     }
 }

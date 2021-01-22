@@ -221,7 +221,6 @@ namespace GISProject_rjy
                 geom.ExportToWkt(out GeomWkt);
                 string[] str = GeomWkt.Split(new char[3] { ' ', '(', ')' });
                 PointF point = new PointF();
-                //MessageBox.Show(str[0].Substring(6)+"@@@"+ str[1].Substring(0, str[1].Length - 1));
                 point.X = Convert.ToSingle(str[2]);
                 point.Y = Convert.ToSingle(str[3]);
                 //计算屏幕坐标
@@ -274,15 +273,18 @@ namespace GISProject_rjy
                                 if(Rules[i].PointSymbol.Fill.Enabled)
                                 {
                                     brush = new SolidBrush(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PointSymbol.Fill.Opacity), 
-                                        Color.FromName(Rules[i].PointSymbol.Fill.Color)));
-                                    float size = Convert.ToSingle(MapLayers[index].DT.Rows[fid][
+                                        ColorTranslator.FromHtml(Rules[i].PointSymbol.Fill.Color)));
+                                    string sizestr = Convert.ToString(MapLayers[index].DT.Rows[fid][
                                         Rules[i].PointSymbol.SizePropertyName]);
+                                    if (sizestr == "Infinity")
+                                        sizestr = "100";
+                                    float size = Convert.ToSingle(sizestr);
                                     rect = new RectangleF((float)(ScreenPoint.X - size * 0.5), (float)(ScreenPoint.Y - size * 0.5), size, size);
                                     g.FillEllipse(brush, rect);
                                     if (Rules[i].PointSymbol.Stroke.Enabled)
                                     {
                                         pen = new Pen(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PointSymbol.Stroke.Opacity),
-                                            Color.FromName(Rules[i].PointSymbol.Stroke.Color)), (float)Rules[i].PointSymbol.Stroke.Width);
+                                            ColorTranslator.FromHtml(Rules[i].PointSymbol.Stroke.Color)), (float)Rules[i].PointSymbol.Stroke.Width);
                                         g.DrawEllipse(pen, rect);
                                     }
                                 }
@@ -294,8 +296,6 @@ namespace GISProject_rjy
                         }
 
                     }
-                    //Brush brush = new Brush(Color.FromArgb(Convert.ToInt32(MapLayers[index].Style.Styles[0].Rules.)
-                    //g.FillEllipse(new SolidBrush())
                 }
 
             }
@@ -318,9 +318,34 @@ namespace GISProject_rjy
                     point.Y = Convert.ToSingle(str[k + 1]);
                     ScreenPoints.Add(FromMapPoint(point));
                 }
-                //绘制
-                g.FillPolygon(new SolidBrush(Color.Orange), ScreenPoints.ToArray());
-                g.DrawPolygon(new Pen(Color.Black), ScreenPoints.ToArray());
+                if (MapLayers[index].Style.Styles.Count == 0)
+                {
+                    //绘制
+                    g.FillPolygon(new SolidBrush(Color.Orange), ScreenPoints.ToArray());
+                    g.DrawPolygon(new Pen(Color.Black), ScreenPoints.ToArray());
+                }
+                else // 按Style绘制
+                {
+                    // 遍历规则
+                    List<LayerStyle.FeatureTypeStyle.Rule> Rules = MapLayers[index].Style.Styles[0].Rules;
+                    for (int i = 0; i < Rules.Count; ++i)
+                    {
+                        if (Rules[i].PolygonSymbol.Stroke.Enabled)
+                        {
+                            SolidBrush brush;
+                            Pen pen;
+                            if (Rules[i].PolygonSymbol.Fill.Enabled)
+                            {
+                                brush = new SolidBrush(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PolygonSymbol.Fill.Opacity),
+                                ColorTranslator.FromHtml(Rules[i].PolygonSymbol.Fill.Color)));
+                                g.FillPolygon(brush, ScreenPoints.ToArray());
+                            }
+                            pen = new Pen(Color.FromArgb(Convert.ToInt32(255 * Rules[i].PolygonSymbol.Stroke.Opacity),
+                                ColorTranslator.FromHtml(Rules[i].PolygonSymbol.Stroke.Color)), (float)Rules[i].PolygonSymbol.Stroke.Width);
+                            g.DrawPolygon(pen, ScreenPoints.ToArray());
+                        }
+                    }
+                }
             }
         }
 
@@ -375,7 +400,7 @@ namespace GISProject_rjy
 
 
         //绘制tiff图层
-        private void DrawTiffLayer(Graphics g, MapLayer curLayer)
+        private void DrawTiffLayer(Graphics g, MapLayer curLayer, int index)
         {
             //PictureBox pictureBox = new PictureBox();
             float[] MBR = new float[4];
@@ -402,21 +427,38 @@ namespace GISProject_rjy
                     for (j = 0; j < height; j++)
                     {
                         int value = Convert.ToInt32(r[i + j * width]);    //像元值
+                        Color newColor = Color.Transparent;
                                                                           //拉伸
-                        if (MinMax[0] == -32768)
+                        if (MapLayers[index].Style.Styles.Count == 0)
                         {
-                            if (value == MinMax[0])
+                            if (MinMax[0] == -32768)
                             {
-                                value = 0;
+                                if (value == MinMax[0])
+                                {
+                                    value = 0;
+                                }
+                                else
+                                {
+                                    value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                }
                             }
                             else
+                                value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                            newColor = Color.FromArgb(value, value, value);
+                        }
+                        else // 按照Style绘制
+                        {
+                            for (int eCount = 0; eCount < curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count - 1; ++eCount)
                             {
-                                value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                if (value >= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Quantity &&
+                                    value <= curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount + 1].Quantity)
+                                {
+                                    newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Opacity),
+                                        ColorTranslator.FromHtml(curLayer.Style.Styles[0].Rules[0].RasterSymbol.ColorMap[eCount].Color));
+                                    break;
+                                }
                             }
                         }
-                        else
-                            value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                        Color newColor = Color.FromArgb(value, value, value);
                         g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
                     }
                 }
@@ -485,7 +527,7 @@ namespace GISProject_rjy
                     DrawShpLayer(e.Graphics, _MapLayers[i]);
                 else if (_MapLayers[i].Type == "Tiff")
                 {
-                    DrawTiffLayer(e.Graphics, _MapLayers[i]);
+                    DrawTiffLayer(e.Graphics, _MapLayers[i], i);
                 }
             }
         }

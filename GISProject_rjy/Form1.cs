@@ -51,7 +51,6 @@ namespace GISProject_rjy
                 reader.Open(dbfPath);
                 mapLayer.DT = reader.GetDataTable();
                 reader.Close();
-                //获取外接矩形
                 DataSource ds = Ogr.Open(path, 0);
                 Layer layer = ds.GetLayerByIndex(0);
                 Envelope ext = new Envelope();
@@ -126,8 +125,8 @@ namespace GISProject_rjy
 
                 // 读取SLD
                 mapControl.MapLayers[tVLayers.SelectedNode.Index].ReadSld(sldFilePath);
+                mapControl.Refresh();
             }
-            //mapControl.DrawSld();
         }
 
         private void 上移图层ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -151,8 +150,10 @@ namespace GISProject_rjy
 
         private void 投影变换ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SpatialReference ss;
-            
+            if (tVLayers.SelectedNode != null)
+            {
+                mapControl.MapLayers[tVLayers.SelectedNode.Index].TransformToWebMercator();
+            }
         }
 
         private void tVLayers_MouseUp(object sender, MouseEventArgs e)
@@ -323,6 +324,23 @@ namespace GISProject_rjy
             else
             {
                 MessageBox.Show("请先将矢量数据导入数据库！");
+            }
+        }
+
+        private void 加载图层样式SLDToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            string sldFilePath = "";
+            openSldFileDialog.Filter = "Styled Layer Descriptor(*.sld)|*.sld"; // 打开文件路径
+            if (openSldFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // 选择文件
+                sldFilePath = openSldFileDialog.FileName;
+                string[] sFileNameSplit = sldFilePath.Split('\\'); //获取文件名称
+                string sFileName = sFileNameSplit[sFileNameSplit.Length - 1].Split('.')[0];
+
+                // 读取SLD
+                mapControl.MapLayers[tVLayers.SelectedNode.Index].ReadSld(sldFilePath);
+                mapControl.Refresh();
             }
         }
 
