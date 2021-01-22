@@ -231,10 +231,10 @@ namespace GISProject_rjy
             if(ImportProvince == true)
             {
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
-                    "pgsql2shp -f D:\\data\\test\\province_hainan.shp -u postgres mypostdb province_hainan";
+                    "pgsql2shp -f D:\\province_hainan.shp -u postgres mypostdb province_hainan";
                 File.WriteAllText("test.bat", bat);
                 Process.Start("test.bat");
-                string path = "D:\\data\\test\\province_hainan.shp";//文件路径
+                string path = "D:\\province_hainan.shp";//文件路径
                 string name = "province_hainan.shp";//文件名
                 FileStream F = new FileStream(path,FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 MapLayer mapLayer = new MapLayer(name, "Shp", path);
@@ -265,10 +265,10 @@ namespace GISProject_rjy
             if (ImportCounty == true)
             {
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
-                    "pgsql2shp -f D:\\data\\test\\county_hainan.shp -u postgres mypostdb county_hainan";
+                    "pgsql2shp -f D:\\county_hainan.shp -u postgres mypostdb county_hainan";
                 File.WriteAllText("test.bat", bat);
                 Process.Start("test.bat");
-                string path = "D:\\data\\test\\county_hainan.shp";//文件路径
+                string path = "D:\\county_hainan.shp";//文件路径
                 string name = "county_hainan.shp";//文件名
                 FileStream F = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 MapLayer mapLayer = new MapLayer(name, "Shp", path);
@@ -298,10 +298,10 @@ namespace GISProject_rjy
             if (ImportCyclone == true)
             {
                 string bat = "cd D:\r\n D:\r\n cd D:\\PostgreSQL\\9.6\\bin\r\n" +
-                    "pgsql2shp -f D:\\data\\test\\cyclone.shp -u postgres mypostdb cyclone";
+                    "pgsql2shp -f D:\\cyclone.shp -u postgres mypostdb cyclone";
                 File.WriteAllText("test.bat", bat);
                 Process.Start("test.bat");
-                string path = "D:\\data\\test\\cyclone.shp";//文件路径
+                string path = "D:\\cyclone.shp";//文件路径
                 string name = "cyclone.shp";//文件名
                 FileStream F = new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite);
                 MapLayer mapLayer = new MapLayer(name, "Shp", path);
