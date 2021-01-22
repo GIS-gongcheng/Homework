@@ -356,16 +356,14 @@ namespace GISProject_rjy
                     //向新表中插入数据
                     dbConnector.InsertDEMInfo(result);
                     MessageBox.Show("统计结果已经成功导入数据库！");
-                    dbConnector.DBClose();
                 }
-                else if(selFrm.cb2 == "windfield.tif")
+                else if(selFrm.cb2 == "windfield.tif")//统计风速数据
                 {
                     //添加新表
                     dbConnector.AddSpeedTable();
                     //向新表中插入数据
                     dbConnector.InsertSpeedInfo(result);
                     MessageBox.Show("统计结果已经成功导入数据库！");
-                    dbConnector.DBClose();
                 }
             }
 
