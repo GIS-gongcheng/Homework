@@ -352,23 +352,14 @@ namespace GISProject_rjy
                     List<float[]> result = statistic.ComputeStatistic(layer, ds);
 
                     DBConnector dbConnector = new DBConnector();
+                    string name = selFrm.cb2;
+                    name = name.Substring(0, name.Length - 4);//去掉名称中的.tif
 
-                    if (selFrm.cb2 == "Hainan_DEM_100m.tif")//统计DEM数据
-                    {
-                        //添加新表
-                        dbConnector.AddDEMTable();
-                        //向新表中插入数据
-                        dbConnector.InsertDEMInfo(result);
-                        MessageBox.Show("统计结果已经成功导入数据库！");
-                    }
-                    else if (selFrm.cb2 == "windfield.tif")//统计风速数据
-                    {
-                        //添加新表
-                        dbConnector.AddSpeedTable();
-                        //向新表中插入数据
-                        dbConnector.InsertSpeedInfo(result);
-                        MessageBox.Show("统计结果已经成功导入数据库！");
-                    }
+                    //添加新表
+                    dbConnector.AddTable(name);
+                    //向新表中插入数据
+                    dbConnector.InsertInfo(result,name);
+                    MessageBox.Show("统计结果已经成功导入数据库！");
                 }
                 else
                     MessageBox.Show("数据坐标系不一致！");
