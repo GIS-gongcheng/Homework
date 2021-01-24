@@ -6,9 +6,6 @@ using System.Drawing;
 using System.Threading.Tasks;
 using System.Data;
 using System.Xml;
-using OSGeo.OGR;
-using OSGeo.OSR;
-using OSGeo.GDAL;
 
 namespace GISProject_rjy
 {
@@ -19,7 +16,6 @@ namespace GISProject_rjy
         public string FilePath;
         public bool Visible;
         public float _MinX, _MinY, _MaxX, _MaxY;
-        //public bool Transformed = true; // 是否转换为Web Mercator投影
         public DataTable DT = new DataTable();   //图层的属性数据表
         public LayerStyle Style = new LayerStyle();
 
@@ -274,37 +270,6 @@ namespace GISProject_rjy
                 }
             }
             Style = style;
-        }
-
-        /// <summary>
-        /// 将给定shp转换为Web Mercator投影
-        /// </summary>
-        /// <returns>文件名</returns>
-        public string TransformToWebMercator()
-        {
-            DataSource ds = Ogr.Open(FilePath, 0);
-            Layer layer = ds.GetLayerByIndex(0);
-            SpatialReference sr = layer.GetSpatialRef();
-            SpatialReference Mercator = new SpatialReference("");
-            Mercator.ImportFromEPSG(3857); // Web Mercator
-            Mercator.SetMercator(0d, 0d, 1d, 0d, 0d);
-            
-            string strDriver = "ESRI Shapefile";
-            OSGeo.OGR.Driver oDriver = Ogr.GetDriverByName(strDriver);
-            oDriver.Register();
-            DataSource ds1 = oDriver.CreateDataSource(FilePath.Remove(FilePath.Length - 4) + "_Mercator.shp", null);
-            Layer layer1 = ds1.CreateLayer(layer.GetName(), Mercator, layer.GetGeomType(), null);
-            Feature feature = layer.GetNextFeature();
-            //遍历图层中每个要素
-            while (feature != null)
-            {
-                Geometry geom = feature.GetGeometryRef();
-                geom.TransformTo(Mercator);
-                feature.SetGeometry(geom);
-                layer1.CreateFeature(feature);
-                feature = layer.GetNextFeature();
-            }
-            return FilePath.Remove(FilePath.Length - 4) + "_Mercator.shp";
         }
     }
 }

@@ -99,7 +99,6 @@
     <Compile Include="GdalConfiguration.cs" />
     <Compile Include="GeoCoordinateSystem.cs" />
     <Compile Include="LayerStyle.cs" />
-    <Compile Include="Map.cs" />
     <Compile Include="MapControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -122,6 +121,7 @@
     <Compile Include="StatisticResult.Designer.cs">
       <DependentUpon>StatisticResult.cs</DependentUpon>
     </Compile>
+    <Compile Include="TransformProject.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

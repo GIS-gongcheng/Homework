@@ -146,39 +146,64 @@ namespace GISProject_rjy
                 DisplayScaleChanged(this);
         }
 
-
-        public void InputShapefile(BinaryReader br, string fileName, string shpfilePath)
+        //添加矢量图层
+        public void AddShpLayer(string path, string name)
         {
-            string dbfFilePath = shpfilePath.Remove(shpfilePath.Length - fileName.Length - 4) + fileName + ".dbf";
-            _MapLayers[_MapLayers.Count - 1].DT = GetDbfData(dbfFilePath);
-            Refresh();
+            MapLayer mapLayer = new MapLayer(name, "Shp", path);
+            dbfReader reader = new dbfReader();
+            string dbfPath = path.Remove(path.Length - 4) + ".dbf";
+            reader.Open(dbfPath);
+            mapLayer.DT = reader.GetDataTable();
+            reader.Close();
+            DataSource ds = Ogr.Open(path, 0);
+            Layer layer = ds.GetLayerByIndex(0);
+            Envelope ext = new Envelope();
+            layer.GetExtent(ext, 1);
+            mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
+            _MapLayers.Add(mapLayer);
+            Extent(_MapLayers[_MapLayers.Count() - 1]);
+        }
+        
+        //添加栅格图层
+        public void AddTiffLayer(string path, string name)
+        {
+            MapLayer mapLayer = new MapLayer(name, "Tiff", path);
+            //获取外接矩形
+            Dataset ds = Gdal.Open(path, Access.GA_ReadOnly);
+            double[] adfGeoTransform = new double[6];
+            float minX, minY, maxX, maxY;
+            ds.GetGeoTransform(adfGeoTransform);
+            minX = (float)(adfGeoTransform[0] + adfGeoTransform[2] * ds.RasterYSize);
+            minY = (float)(adfGeoTransform[3] + adfGeoTransform[5] * ds.RasterYSize);
+            maxX = (float)(adfGeoTransform[0] + adfGeoTransform[1] * ds.RasterXSize);
+            maxY = (float)(adfGeoTransform[3] + adfGeoTransform[4] * ds.RasterXSize);
+            mapLayer.SetExtent(minX, minY, maxX, maxY);
+            _MapLayers.Add(mapLayer);
+            Extent(_MapLayers[_MapLayers.Count - 1]);
         }
 
-        public void AddLayer(MapLayer layer)
+        //上移图层
+        public void MoveUpLayer(int LayerIndex)
         {
-            _MapLayers.Add(layer);
+            //在_MapLayers中存储索引号
+            int index = _MapLayers.Count() - 1 - LayerIndex;
+            if (index < _MapLayers.Count() - 1)
+            {
+                MapLayer curlayer = _MapLayers[index];
+                _MapLayers.RemoveAt(index);
+                _MapLayers.Insert(index + 1, curlayer);
+                Refresh();
+            }
         }
 
-        public void AddLayer(string name, string type, string filePath)
-        {
-            MapLayer newLayer = new MapLayer(name, type, filePath);
-            _MapLayers.Add(newLayer);
-        }
-
-        public void MoveUpLayer(int Layerid)
-        {
-            MapLayer curlayer = _MapLayers[Layerid];
-            _MapLayers.RemoveAt(Layerid);
-            _MapLayers.Insert(Layerid - 1, curlayer);
-            Refresh();
-        }
-
+        //删除图层
         public void DeleteLayer(int Layerid)
         {
             _MapLayers.RemoveAt(Layerid);
             Refresh();
         }
 
+        //获取位图
         public Bitmap GetOutputBitmap()
         {
             Bitmap outputBmp = new Bitmap(this.Width, this.Height);
@@ -192,9 +217,10 @@ namespace GISProject_rjy
 
         #region 事件
 
+        //初始化
         private void mapControl_Load(object sender, EventArgs e)
         {
-            mFeatures = new Bitmap(this.Width, this.Height);    //初始化 勿删
+            mFeatures = new Bitmap(this.Width, this.Height);
             //SelectFeature();
         }
 
@@ -210,16 +236,6 @@ namespace GISProject_rjy
 
         #region 私有函数
 
-        private DataTable GetDbfData(string tablePath)
-        {
-            dbfReader sDBFReader = new dbfReader();
-            if (sDBFReader.Open(tablePath))
-                return sDBFReader.GetDataTable();
-            else
-                return new DataTable();
-        }
-
-
         //绘制Point要素
         private void DrawPoint(Graphics g, Geometry geom, int index, int fid)
         {
@@ -234,6 +250,8 @@ namespace GISProject_rjy
                 point.Y = Convert.ToSingle(str[3]);
                 //计算屏幕坐标
                 PointF ScreenPoint = FromMapPoint(point);
+                if ((int)ScreenPoint.X == -2147483648)
+                    return;
 
                 if (MapLayers[index].Style.Styles.Count == 0)
                 {
@@ -322,10 +340,11 @@ namespace GISProject_rjy
                 List<PointF> ScreenPoints = new List<PointF>();
                 for (int k = 3; k < str.Count() - 3; k += 2)
                 {
-                    PointF point = new PointF();
-                    point.X = Convert.ToSingle(str[k]);
-                    point.Y = Convert.ToSingle(str[k + 1]);
-                    ScreenPoints.Add(FromMapPoint(point));
+                    PointF point = new PointF(Convert.ToSingle(str[k]), Convert.ToSingle(str[k + 1]));
+                    PointF screenPoint = FromMapPoint(point);
+                    if ((int)screenPoint.X == -2147483648)
+                        return;
+                    ScreenPoints.Add(screenPoint);
                 }
                 if (MapLayers[index].Style.Styles.Count == 0)
                 {
@@ -404,6 +423,8 @@ namespace GISProject_rjy
                     }
                 }
             }
+            ds.FlushCache();
+            ds.Dispose();
         }
 
         //绘制tiff图层
@@ -442,25 +463,30 @@ namespace GISProject_rjy
                         {
                             if (MapLayers[index].Style.Styles.Count == 0)
                             {
-                                int value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                                int value1 = 0;
+                                if(MinMax[0] <- 300)//DEM数据拉伸
+                                {
+                                    if(value >= -128)
+                                    {
+                                        value1 = (int)((value +128) / (MinMax[1] +128) * 255.0);
+                                    }
+                                }
+                                else
+                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);                                                             
                                 newColor = Color.FromArgb(value1, value1, value1);
                             }
                             else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
                             {
-                                if (MinMax[0] == -32768)
+                                int value1 = 0;
+                                if (MinMax[0] < -300)//DEM数据拉伸
                                 {
-                                    if (value == MinMax[0])
+                                    if (value >= -128)
                                     {
-                                        value = 0;
-                                    }
-                                    else
-                                    {
-                                        value = (int)(1.0 * (value + 128) / (MinMax[1] + 128) * 255.0);
+                                        value1 = (int)((value + 128) / (MinMax[1] + 128) * 255.0);
                                     }
                                 }
                                 else
-                                    value = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
-                                int value1 = Convert.ToInt32(value);
+                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
                                 newColor = Color.FromArgb(value1, value1, value1);
                                 newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
                             }
@@ -478,11 +504,11 @@ namespace GISProject_rjy
                                 }
                             }
                         }
-                        g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));
-
-                        // TODO FillRectangle
+                        g.FillRectangle(new SolidBrush(newColor), new RectangleF(locationPoint.X + i, locationPoint.Y + j, 1, 1));                        
                     }
                 }
+                ds.FlushCache();
+                ds.Dispose();
             }
         }
         #endregion
@@ -508,12 +534,14 @@ namespace GISProject_rjy
             }
         }
 
+        //初始化
         private void MapControl_Load_1(object sender, EventArgs e)
         {
-            mFeatures = new Bitmap(this.Width, this.Height);    //初始化 勿删
+            mFeatures = new Bitmap(this.Width, this.Height);
             //SelectFeature();
         }
 
+        //鼠标按下
         private void MapControl_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -523,6 +551,7 @@ namespace GISProject_rjy
             }
         }
 
+        //鼠标移动
         private void MapControl_MouseMove(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)

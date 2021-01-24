@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace GISProject_rjy
 {
+    //该窗体用于显示统计分析结果
     public partial class StatisticResult : Form
     {
         public StatisticResult(List<float[]> result, List<string[]> county)

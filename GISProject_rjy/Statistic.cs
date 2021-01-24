@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using OSGeo.OGR;
-using OSGeo.OSR;
 using OSGeo.GDAL;
 
 namespace GISProject_rjy
@@ -18,8 +17,7 @@ namespace GISProject_rjy
             const double noDataValue = -9999;   // NoData值 
             string outputRasterFile = outRaster;
             Envelope envelope = new Envelope(); //原图层外接矩形
-            layer.GetExtent(envelope, 0);
-            //计算栅格化后行列数             
+            layer.GetExtent(envelope, 0);         
             //新建栅格图层 
             OSGeo.GDAL.Driver outputDriver = Gdal.GetDriverByName("GTiff");
             Dataset outputDataset = outputDriver.Create(outputRasterFile, xSize, ySize, 1, DataType.GDT_Int32, null);//DataType.GDT_Float64
@@ -42,9 +40,7 @@ namespace GISProject_rjy
             double[] burnValues = new double[] { 10.0 };
             Dataset myDataset = Gdal.Open(outputRasterFile, Access.GA_Update);
             string[] rasterizeOptions;
-            //rasterizeOptions = new string[] { "ALL_TOUCHED=TRUE", "ATTRIBUTE=" + field };
             rasterizeOptions = new string[] { "ATTRIBUTE=" + field, "ALL_TOUCHED=TRUE" };
-            //Gdal.RasterizeLayer(myDataset, 1, bandlist, layer, IntPtr.Zero, IntPtr.Zero, 1, burnValues, null, null, null);
             int tets = Gdal.RasterizeLayer(myDataset, 1, bandlist, layer, IntPtr.Zero, IntPtr.Zero, 1, burnValues, rasterizeOptions, new Gdal.GDALProgressFuncDelegate(ProgressFunc), "Raster conversion");
             myDataset.FlushCache();
             myDataset.Dispose();
@@ -120,7 +116,7 @@ namespace GISProject_rjy
                 if (code > 0)
                 {
                     float value = rRas[i];
-                    if (value > -30000 && value > nodata + 1)
+                    if (value > -128 && value > nodata + 1)
                     {
                         int j = 0;
                         for (; j < result.Count(); j++)

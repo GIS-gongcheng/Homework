@@ -14,6 +14,7 @@ namespace GISProject_rjy
     {
         public string cb1;
         public string cb2;
+        public string cb3;
         public SelectLayer(MapControl mapControl)
         {
             InitializeComponent();
@@ -44,6 +45,11 @@ namespace GISProject_rjy
         private void button2_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;
+        }
+
+        private void comboBox3_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            cb3 = comboBox3.Text;
         }
     }
 }

@@ -13,7 +13,6 @@ using OSGeo.OGR;
 using OSGeo.OSR;
 using OSGeo.GDAL;
 using System.Diagnostics;
-using GISProject_rjy;
 
 namespace GISProject_rjy
 {
@@ -26,10 +25,9 @@ namespace GISProject_rjy
             GdalConfiguration.ConfigureOgr();
             Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
             Gdal.AllRegister();
-            Gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "YES");
+            Gdal.SetConfigOption("SHAPE_ENCODING", "");
             Ogr.RegisterAll();
-            InitializeComponent();
-            
+            InitializeComponent();           
         }
 
         //用来指示是否把shp文件导入了数据库
@@ -46,24 +44,13 @@ namespace GISProject_rjy
             {
                 string path = ofd.FileName; //文件路径
                 string name = ofd.SafeFileName; //文件名
-                MapLayer mapLayer = new MapLayer(name, "Shp", path);
-                dbfReader reader = new dbfReader();
-                string dbfPath = path.Remove(path.Length - 4) + ".dbf";
-                reader.Open(dbfPath);
-                mapLayer.DT = reader.GetDataTable();
-                reader.Close();
-                DataSource ds = Ogr.Open(path, 0);
-                Layer layer = ds.GetLayerByIndex(0);
-                Envelope ext = new Envelope();
-                layer.GetExtent(ext, 1);
-                mapLayer.SetExtent((float)ext.MinX, (float)ext.MinY, (float)ext.MaxX, (float)ext.MaxY);
                 //添加新图层至地图
+                mapControl.AddShpLayer(path, name);               
                 if (tVLayers.Nodes.Count == 0)
                     tVLayers.Nodes.Add("图层");
-                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.Nodes[0].Nodes.Insert(0, name);
                 tVLayers.ExpandAll();
-                mapControl._MapLayers.Add(mapLayer);
-                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+                tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[0];
             }
         }
 
@@ -76,32 +63,15 @@ namespace GISProject_rjy
             {
                 string path = ofd.FileName; //文件路径
                 string name = ofd.SafeFileName; //文件名
-                MapLayer mapLayer = new MapLayer(name, "Tiff", path);
-                //获取外接矩形
-                Dataset ds = Gdal.Open(path, Access.GA_ReadOnly);
-                double[] adfGeoTransform = new double[6];
-                float minX, minY, maxX, maxY;
-                ds.GetGeoTransform(adfGeoTransform);
-                minX = (float)(adfGeoTransform[0] + adfGeoTransform[2] * ds.RasterYSize);
-                minY = (float)(adfGeoTransform[3] + adfGeoTransform[5] * ds.RasterYSize);
-                maxX = (float)(adfGeoTransform[0] + adfGeoTransform[1] * ds.RasterXSize);
-                maxY = (float)(adfGeoTransform[3] + adfGeoTransform[4] * ds.RasterXSize);
-                mapLayer.SetExtent(minX, minY, maxX, maxY);
+                mapControl.AddTiffLayer(path, name);
+                //添加新图层至地图
                 if (tVLayers.Nodes.Count == 0)
                     tVLayers.Nodes.Add("图层");
-                tVLayers.Nodes[0].Nodes.Add(name);
+                tVLayers.Nodes[0].Nodes.Insert(0, name);
                 tVLayers.ExpandAll();
-                mapControl._MapLayers.Add(mapLayer);
-                mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count - 1]);
+                tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[0];
             }
         }
-
-        private void 读取图层ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-
 
         private void tVLayers_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
@@ -123,9 +93,9 @@ namespace GISProject_rjy
                 sldFilePath = openSldFileDialog.FileName;
                 string[] sFileNameSplit = sldFilePath.Split('\\'); //获取文件名称
                 string sFileName = sFileNameSplit[sFileNameSplit.Length - 1].Split('.')[0];
-
                 // 读取SLD
-                mapControl.MapLayers[tVLayers.SelectedNode.Index].ReadSld(sldFilePath);
+                int index = mapControl._MapLayers.Count() - 1 - tVLayers.SelectedNode.Index;
+                mapControl.MapLayers[index].ReadSld(sldFilePath);
                 mapControl.Refresh();
             }
         }
@@ -134,27 +104,26 @@ namespace GISProject_rjy
         {
             TreeNode tncur = tVLayers.SelectedNode;
             int i = tncur.Index;
-            if (tncur.Index == 0) return;
-            TreeNode newnode = (TreeNode)tncur.Clone();
-            tncur.Parent.Nodes.Insert(tncur.PrevNode.Index, newnode);
-            tncur.Remove();
-            tncur = newnode;
-            tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[i - 1];
-            mapControl.MoveUpLayer(i);
+            if (i > 0)
+            {
+                string name = tVLayers.Nodes[0].Nodes[i].Text;
+                tVLayers.Nodes[0].Nodes.RemoveAt(i);
+                tVLayers.Nodes[0].Nodes.Insert(i-1, name);
+                tVLayers.ExpandAll();
+                tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[i - 1];
+                mapControl.MoveUpLayer(i);
+            }
         }
 
         private void 删除图层ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mapControl.DeleteLayer(tVLayers.SelectedNode.Index);
+            int index = mapControl._MapLayers.Count() - 1 - tVLayers.SelectedNode.Index;
+            mapControl.DeleteLayer(index);
             tVLayers.Nodes[0].Nodes.Remove(tVLayers.SelectedNode);
         }
 
         private void 投影变换ToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (tVLayers.SelectedNode != null)
-            {
-                MessageBox.Show("已将数据导出到" + mapControl.MapLayers[tVLayers.SelectedNode.Index].TransformToWebMercator());
-            }
+        {            
         }
 
         private void tVLayers_MouseUp(object sender, MouseEventArgs e)
@@ -173,15 +142,8 @@ namespace GISProject_rjy
 
         private void 缩放至图层ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string name = tVLayers.SelectedNode.Text;
-            for (int i = 0; i < mapControl._MapLayers.Count(); i++)
-            {
-                if (mapControl._MapLayers[i].Name == name)
-                {
-                    mapControl.Extent(mapControl._MapLayers[i]);
-                    break;
-                }
-            }
+            int i = tVLayers.SelectedNode.Index;
+            mapControl.Extent(mapControl._MapLayers[mapControl._MapLayers.Count()-1-i]);
         }
 
         private void 导入数据库ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -349,20 +311,19 @@ namespace GISProject_rjy
                 {
                     Statistic statistic = new Statistic();
                     //code-ave-max-min-count(最后一列count是像元数需要删去)
-                    List<float[]> result = statistic.ComputeStatistic(layer, ds);
-
+                    List<float[]> result = statistic.ComputeStatistic(layer, ds);                    
+                    //存入数据库
                     DBConnector dbConnector = new DBConnector();
                     string name = selFrm.cb2;
                     name = name.Substring(0, name.Length - 4);//去掉名称中的.tif
-
                     //添加新表
                     dbConnector.AddTable(name);
                     //向新表中插入数据
                     dbConnector.InsertInfo(result,name);
-                    MessageBox.Show("统计结果已经成功导入数据库！");
+                    MessageBox.Show("统计结果已经成功导入数据库！");                   
                 }
                 else
-                    MessageBox.Show("数据坐标系不一致！");
+                    MessageBox.Show("数据坐标系不一致！");           
             }
         }
 
@@ -376,8 +337,116 @@ namespace GISProject_rjy
                 //保存到磁盘文件
                 bmp.Save(picPath, System.Drawing.Imaging.ImageFormat.Bmp);
                 bmp.Dispose();
-                MessageBox.Show("位图导出完成！", "提示");
+                MessageBox.Show("位图导出完成！", "制图结果");
             }
+        }
+
+        private void 矢量数据重投影ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //选择投影变换图层
+            SelectLayer selFrm = new SelectLayer(mapControl);
+            selFrm.Text = "选择变换图层";
+            selFrm.label1.Text = "选择矢量图层";
+            selFrm.label2.Visible = false;
+            selFrm.comboBox2.Visible = false;
+            if (selFrm.ShowDialog(this) == DialogResult.OK)
+            {
+                int index = 0;
+                for (int i = 0; i < mapControl._MapLayers.Count(); i++)
+                {
+                    if (mapControl._MapLayers[i].Name == selFrm.cb1)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                //选择输出文件路径
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Title = "选择重投影文件存储路径";
+                sfd.Filter = @"shp(*.shp)|*.shp";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = sfd.FileName; //文件路径
+                    string[] path2 = path.Split(new char[1] { '\\' });//文件名
+                    string name = path2[path2.Count() - 1];
+                    //打开需转换矢量文件
+                    DataSource ds = Ogr.Open(mapControl._MapLayers[index].FilePath, 0);
+                    //投影转换
+                    TransformProject transform = new TransformProject();
+                    transform.TransformShp(ds,path);
+                    //转换结果添加至地图
+                    mapControl.AddShpLayer(path, name);
+                    if (tVLayers.Nodes.Count == 0)
+                        tVLayers.Nodes.Add("图层");
+                    tVLayers.Nodes[0].Nodes.Insert(0, name);
+                    tVLayers.ExpandAll();
+                    tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[0];
+                    MessageBox.Show("成功转换至Web墨卡托投影！", "投影转换结果");
+                }
+            }
+        }
+
+        private void 栅格数据重投影ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //选择投影变换图层
+            SelectLayer selFrm = new SelectLayer(mapControl);
+            selFrm.Text = "选择变换图层";
+            selFrm.label2.Text = "选择栅格图层";
+            selFrm.label1.Visible = false;
+            selFrm.comboBox1.Visible = false;
+            selFrm.label3.Visible = true;
+            selFrm.comboBox3.Visible = true;
+            selFrm.comboBox3.Items.Add("NearestNeighbour");
+            selFrm.comboBox3.Items.Add("Bilinear");
+            selFrm.comboBox3.Items.Add("Cubic");
+            selFrm.comboBox3.Items.Add("CubicSpline");
+            if (selFrm.ShowDialog(this) == DialogResult.OK)
+            {
+                int index = 0;
+                for (int i = 0; i < mapControl._MapLayers.Count(); i++)
+                {
+                    if (mapControl._MapLayers[i].Name == selFrm.cb2)
+                    {
+                        index = i;
+                        break;
+                    }
+                }
+                //选择输出文件路径
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Title = "选择重投影文件存储路径";
+                sfd.Filter = @"Tiff(*.tif)|*.tif";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    string path = sfd.FileName; //文件路径
+                    string[] path2 = path.Split(new char[1] { '\\' });//文件名
+                    string name = path2[path2.Count() - 1];
+                    //投影转换
+                    TransformProject transform = new TransformProject();
+                    float[] MBR = new float[4];
+                    mapControl._MapLayers[index].GetExtent(MBR);
+                    double[] dbx = { (double)MBR[0], (double)MBR[0], (double)MBR[2], (double)MBR[2] };
+                    double[] dby = { (double)MBR[1], (double)MBR[3], (double)MBR[1], (double)MBR[3] };
+                    Dataset ds = Gdal.Open(mapControl._MapLayers[index].FilePath, Access.GA_ReadOnly);
+                    //重采样方式
+                    ResampleAlg re = ResampleAlg.GRA_NearestNeighbour;
+                    if (selFrm.cb3 == "Bilinear")
+                        re = ResampleAlg.GRA_Bilinear;
+                    else if (selFrm.cb3 == "Cubic")
+                        re = ResampleAlg.GRA_Cubic;
+                    else if (selFrm.cb3 == "CubicSpline")
+                        re = ResampleAlg.GRA_CubicSpline;
+                    transform.TransformTiff(ds, dbx, dby, path, re);
+                    //转换结果添加至地图
+                    mapControl.AddTiffLayer(path, name);
+                    if (tVLayers.Nodes.Count == 0)
+                        tVLayers.Nodes.Add("图层");
+                    tVLayers.Nodes[0].Nodes.Insert(0, name);
+                    tVLayers.ExpandAll();
+                    tVLayers.SelectedNode = tVLayers.Nodes[0].Nodes[0];
+                    MessageBox.Show("成功转换至Web墨卡托投影！", "投影转换结果");
+                }
+            }
+
         }
     }
 }
