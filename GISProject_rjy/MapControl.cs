@@ -204,14 +204,11 @@ namespace GISProject_rjy
         }
 
         //获取位图
-        public Bitmap GetOutputBitmap()
+        public Bitmap GetBitmap()
         {
-            Bitmap outputBmp = new Bitmap(this.Width, this.Height);
-            Graphics g = Graphics.FromImage(outputBmp);
-            g.Clear(this.BackColor);    //清空画布
-            g.DrawImage(mFeatures, 0, 0); //将缓冲区的位图直接贴到显示区
-            g.Dispose();
-            return outputBmp;
+            Bitmap bit = new Bitmap(this.Width, this.Height);
+            this.DrawToBitmap(bit, new Rectangle(0, 0, this.Width, this.Height));
+            return bit;
         }
         #endregion
 
@@ -468,11 +465,11 @@ namespace GISProject_rjy
                                 {
                                     if(value >= -128)
                                     {
-                                        value1 = (int)((value +128) / (MinMax[1] +128) * 255.0);
+                                        value1 = (int)((value +128) / (MinMax[1] +128) * 205.0+50);
                                     }
                                 }
                                 else
-                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);                                                             
+                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 235.0 + 20);                                                             
                                 newColor = Color.FromArgb(value1, value1, value1);
                             }
                             else if (MapLayers[index].Style.Styles[0].Rules[0].RasterSymbol.ColorMap.Count == 0)
@@ -482,11 +479,11 @@ namespace GISProject_rjy
                                 {
                                     if (value >= -128)
                                     {
-                                        value1 = (int)((value + 128) / (MinMax[1] + 128) * 255.0);
+                                        value1 = (int)((value + 128) / (MinMax[1] + 128) * 205.0 + 50);
                                     }
                                 }
                                 else
-                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 255.0);
+                                    value1 = (int)((value - MinMax[0]) / (MinMax[1] - MinMax[0]) * 235.0 + 20);
                                 newColor = Color.FromArgb(value1, value1, value1);
                                 newColor = Color.FromArgb(Convert.ToInt32(255 * curLayer.Style.Styles[0].Rules[0].RasterSymbol.Opacity), newColor);
                             }

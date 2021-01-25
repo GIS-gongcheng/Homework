@@ -333,7 +333,7 @@ namespace GISProject_rjy
             if (saveBitmapDialog.ShowDialog() == DialogResult.OK)
             {
                 string picPath = saveBitmapDialog.FileName;
-                Bitmap bmp = mapControl.GetOutputBitmap();
+                Bitmap bmp = mapControl.GetBitmap();
                 //保存到磁盘文件
                 bmp.Save(picPath, System.Drawing.Imaging.ImageFormat.Bmp);
                 bmp.Dispose();
